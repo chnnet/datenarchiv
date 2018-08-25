@@ -1,0 +1,24 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title></title></head><body>	<h1>Rechenmeister - Start</h1>
+
+		<form style="height: 169px;" method="post" action="rm_rechnen.php" name="rm_param">
+			<table>
+				<tbody>
+				<tr>
+					<td><label>Zahlenraum: </label></td>
+					<td><input maxlength="6" size="6" name="zahlenraum" value="30"></td>
+				</tr>
+				<tr>
+					<td><label>Rechenaufgabe: </label></td>
+					<td>
+					<input type="radio" name="art" value="1">+<br>
+					<input type="radio" name="art" value="2">-<br>
+					<input type="radio" name="art" value="3">Wieviel-Rechnung
+					</td>
+				</tr>
+				</tbody>
+			</table>
+			<input name="zaehler" type="hidden" value="-1">
+			<input value="Start" type="submit"></form>
+		</form>
+</body></html>

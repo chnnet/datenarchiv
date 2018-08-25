@@ -1,0 +1,52 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html><head>
+  
+  <meta content="text/html; charset=ISO-8859-1" http-equiv="content-type">
+  <title>Budgetdaten erfassen</title>
+
+  
+</head><body>
+<h1>Budgetdaten erfassen</h1>
+
+<form style="height: 169px;" target="main" method="post" action="budget_erf.php" name="budget_erf">
+  <table>
+    <tbody>
+      <tr>
+        <td><label>Jahr: </label></td>
+        <td><input maxlength="6" size="6" name="jahr"></td>
+      </tr>
+      <tr>
+        <td><label>Monat: </label></td>
+        <td><input maxlength="2" size="2" name="monat"></td>
+        <td><label>Woche: </label></td>
+        <td><input maxlength="2" size="2" name="woche"></td>
+        <td><label>Tag: </label></td>
+        <td><input maxlength="2" size="2" name="tag"></td>
+      </tr>
+      <tr>
+        <td><label>Konto: </label></td>
+        <td>
+        <select name="konto">
+        </select>
+        </td>
+      </tr>
+      <tr>
+        <td><label>Periodisch: </label></td>
+        <td><input name="periodisch" value="J" type="radio">jährlich</td>
+        <td><input name="periodisch" value="Q" type="radio">vierteljährlich</td>
+        <td><input name="periodisch" value="M" type="radio">monatlich</td>
+      </tr>
+      <tr>
+        <td><label>Betrag: </label></td>
+        <td><input maxlength="6" size="6" name="betrag_int">,<input maxlength="2" size="2" name="betrag_dec"></td>
+      </tr>
+      <tr>
+        <td><label>gültig</label></td>
+        <td>ab: <input maxlength="6" size="6" name="betrag_int"> bis:<input maxlength="2" size="2" name="betrag_dec"></td>
+      </tr>
+    </tbody>
+  </table>
+<br>
+  <input value="Speichern" type="submit"></form>
+
+</body></html>

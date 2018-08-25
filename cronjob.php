@@ -1,0 +1,1 @@
+<? exec("crontab crontab.txt"); ?>

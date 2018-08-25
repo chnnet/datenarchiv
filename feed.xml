@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+ <id>urn:iweb:30FBD8C1-EC4F-4C7F-97C7-71E8922CA121</id>
+ <title>Page list Atom feed</title>
+ <updated>2017-12-25T21:02:42+01:00</updated>
+ <link rel="self" href="feed.xml"/>
+ <generator>iWeb</generator>
+ <author>
+  <name>iWeb</name>
+ </author>
+ <entry>
+  <id>urn:iweb:6BE7E4D3-0BCF-4B0D-AF28-1279FE3FF4A0</id>
+  <title>Willkommen</title>
+  <title xmlns="urn:iweb:">Willkommen</title>
+  <in-navbar xmlns="urn:iweb:">6BE7E4D3-0BCF-4B0D-AF28-1279FE3FF4A0</in-navbar>
+  <link rel="alternate" href="Willkommen.html"/>
+  <updated>2017-12-25T21:02:42.001+01:00</updated>
+  <content>Willkommen</content>
+ </entry>
+ <entry>
+  <id>urn:iweb:126827A0-6794-45B8-AA6B-6D85F49C5388</id>
+  <title>Intern</title>
+  <title xmlns="urn:iweb:">Intern</title>
+  <in-navbar xmlns="urn:iweb:">126827A0-6794-45B8-AA6B-6D85F49C5388</in-navbar>
+  <link rel="alternate" href="Intern.html"/>
+  <updated>2017-12-25T21:02:42.002+01:00</updated>
+  <content>Intern</content>
+ </entry>
+ <entry>
+  <id>urn:iweb:EADF319F-225E-4F2B-A87D-ACD3E87FFB23</id>
+  <title>Rechenmeister</title>
+  <title xmlns="urn:iweb:">Rechenmeister</title>
+  <in-navbar xmlns="urn:iweb:">EADF319F-225E-4F2B-A87D-ACD3E87FFB23</in-navbar>
+  <link rel="alternate" href="Rechenmeister.html"/>
+  <updated>2017-12-25T21:02:42.003+01:00</updated>
+  <content>Rechenmeister</content>
+ </entry>
+</feed>
