@@ -7,8 +7,8 @@ $app_benutzer = $_POST['loginname'];
 $app_passwort = $_POST['password'];
 $host = $_POST['host'];
 $dbname = $_POST['dbname'];
-$benutzer = "u25587";
-$passwort = "dZrVKtMoz4V4Xq";
+$benutzer = "";
+$passwort = "";
 
 $con = mysqli_connect($host, $benutzer, $passwort);
 if (!$con) {
