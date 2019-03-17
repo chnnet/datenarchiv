@@ -40,7 +40,7 @@
 			$wp_betrag = ($wp_betrag_dec / 100 ) + $wp_betrag_int;
             $wp_betrag = number_format ($wp_betrag, 2, '.', '');
 			$av_betrag = ($av_betrag_dec / 100 ) + $av_betrag_int;
-            $av_betrag = number_format ($av_betrag, 2, '.', '')
+            $av_betrag = number_format ($av_betrag, 2, '.', '');
 
             // ***** Parameter auslesen session *****
             $host = $_SESSION['host'];
@@ -81,7 +81,7 @@ echo "jahr: " . $jahr;
             $num=mysql_num_rows($result);
             $i=0;
             $rownum=0;
-            echo "<table>";
+            echo "<table border=\"1\">";
             while ($i < $num) {
 
                     $rownum++;
