@@ -1,5 +1,5 @@
 <?php
-        session_start();
+//        session_start();
 ?>
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
@@ -34,24 +34,32 @@
             // String sql = "";
             // int test;
             //global $max_vid;
-
+/*
             // ***** Parameter auslesen session *****
             $host = $_SESSION['host'];
             $benutzer = $_SESSION['benutzer'];
             $passwort = $_SESSION['passwort'];
             $dbname = $_SESSION['dbname'];
             $benutzer_id = $_SESSION['keynr'];
+*/
 
-            $con = mysql_connect($host, $benutzer, $passwort);
-            mysql_select_db($dbname);
+//Test
+            $host = 'localhost';
+            $benutzer = 'root';
+            $passwort = '';
+            $dbname = 'test';
+
+//            $con = mysqli_connect($host, $benutzer, $passwort);
+//            mysql_select_db($dbname);
+	        $con = new mysqli($host, $benutzer, $passwort, $dbname);
 
             // Datenbank
             if ($anmerkung != null)
             {
 
-                    $result = mysql_query("INSERT INTO budget VALUES (" . $budget_id . "," . $gueltigab . "," . $gueltigbis . ","  . $konto . "," . $betrag . ",'" . $haeufigkeit . "','" . $anmerkung . "')");
+                    $result = mysqli_query($con, "INSERT INTO budget (budget_id,gueltigab,gueltigbis,ktonr,betrag,haeufigkeit,anmerkung) VALUES (" . $budget_id . "," . $gueltigab . "," . $gueltigbis . ","  . $konto . "," . $betrag . ",'" . $haeufigkeit . "','" . $anmerkung . "')");
                     if (!$result) {
-                        exit('MySQL Fehler: (' . mysql_errno() . ') ' . mysql_error());
+                        exit('MySQL Fehler: (' . mysqli_errno($con) . ') ' . mysqli_error($con));
                     }
                     else
                     {
@@ -72,22 +80,22 @@
 		<td><input name="budget_id" type="text" size="3" value="1" /></td>
 </tr>
 <tr>
-		<td>Häufigkeit</td>
+		<td>H&auml;ufigkeit</td>
 		<td>
 			<input name="haeufigkeit" type="radio" value="M">Monatlich
 			<input name="haeufigkeit" type="radio" value="Z">Zweimonatlich
 			<input name="haeufigkeit" type="radio" value="Q">Quartal
-			<input name="haeufigkeit" type="radio" value="H">Halbjährlich
-			<input name="haeufigkeit" type="radio" value="J">Jährlich
+			<input name="haeufigkeit" type="radio" value="H">Halbj&auml;hrlich
+			<input name="haeufigkeit" type="radio" value="J">J&auml;hrlich
 			<input name="haeufigkeit" type="radio" value="E">Einmalig
 		</td>
 </tr>
 <tr>
-		<td>Gültig ab</td>
+		<td>G&uuml;ltig ab</td>
 		<td><input name="gueltigab" type="text" size="6" /></td>
 </tr>
 <tr>
-		<td>Gültig bis</td>
+		<td>G&uuml;ltig bis</td>
 		<td><input name="gueltigbis" type="text" size="6" /></td>
 </tr>
 <tr>
