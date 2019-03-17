@@ -9,6 +9,7 @@
 
 <h1> Budgetbericht 12 Monate </h1>
 <?php
+
 	// Session-daten auslesen
 	$host = $_SESSION['host'];
 	$benutzer = $_SESSION['benutzer'];
@@ -105,6 +106,7 @@ global $end_periode;
 global $bargeld;
 global $bank;
 global $kreditkarte;
+global $anita_verr;
 // Funktion verwenden?
 $end_periode = $akt_periode + 12;
 $monat = $end_periode % 100;
@@ -115,15 +117,16 @@ if ($monat > 12)
 	$end_periode = (($akt_jahr + 1) * 100) + ($monat - 13);
 }
 	// Anfangssaldo aus Vermögen errechnen, array für salden errechnen
-	mysql_select_db("db25587");
+	mysql_select_db($dbname);
 	// Anfangssaldo holen
 	$vormonat = $akt_periode - 1;
-	$res_saldo = mysql_query("SELECT saldo_bargeld, saldo_bank, saldo_kreditkarte from vermoegen where jahrmonat=" . $vormonat);
+	$res_saldo = mysql_query("SELECT saldo_bargeld, saldo_bank, saldo_kreditkarte, saldo_verrAnita from vermoegen where jahrmonat=" . $vormonat);
 	if ($res_saldo)
 	{
 		$bargeld = mysql_result($res_saldo,0,0);
 		$bank = mysql_result($res_saldo,0,1);
 		$kreditkarte = mysql_result($res_saldo,0,2);
+		$anita_verr = mysql_result($res_saldo,0,3);
 	}
 	else
 	{
@@ -246,8 +249,8 @@ if ($monat > 12)
 						$saldo = $saldo + $summe;
 					}
 				}
-				// KK berücksichtigen
-				if ($i=1 ) $saldo = $saldo + $kreditkarte;
+				// KK berücksichtigen, verr_Anita
+				if ($i=1 ) $saldo = $saldo + $kreditkarte + $anita_verr;
 				$monatssaldo[$monat] = $saldo;
 				// nächstes Monat setzen
 				$monat = $monat + 1;
@@ -299,6 +302,7 @@ if ($monat > 12)
 			$saldo = $bargeld+$bank; //Anfangsbestand
 			// Kreditkarte im aktuellen Monat als Zahlung berücksichtigen
 			echo "<tr><td>Kreditkarte</td><td align=right>" . number_format($kreditkarte,2,",",".") . "</td>";			
+			echo "<tr><td>Anita Verr</td><td align=right>" . number_format($anita_verr,2,",",".") . "</td>";			
 			for ($i=1;$i<12;$i++)
 				echo "<td align=right>0</td>";
 			echo "</tr><tr><td></td>";			
