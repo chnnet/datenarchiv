@@ -14,6 +14,21 @@
         if (isset($_POST['jahrmonat'])) // speichern
         {
 
+			function erzeugeDezimal(einer, dezimal) {
+			
+					if (einer < 0) {
+
+						$betrag = ($dezimal / 100) * (-1) + $einer;
+					
+					} else {
+					
+						$betrag = ($dezimal / 100) + $einer;
+					
+					}
+				$betrag = number_format ($betrag, 2, '.', '');	
+				return $betrag;
+			}
+
             // ***** Parameter auslesen - Seite *****
 
             $jahrmonat = $_POST['jahrmonat'];
@@ -29,18 +44,12 @@
             $wp_betrag_int = $_POST['wp_betrag_int'];
             $av_betrag_dec = $_POST['av_betrag_dec'];
             $av_betrag_int = $_POST['av_betrag_int'];
-            $bar_betrag = ($bar_betrag_dec / 100 ) + $bar_betrag_int;
-            $bar_betrag = number_format ($bar_betrag, 2, '.', '');
-            $bank_betrag = ($bank_betrag_dec / 100 ) + $bank_betrag_int;
-            $bank_betrag = number_format ($bank_betrag, 2, '.', '');
-            $kk_betrag = ($kk_betrag_dec / 100 ) + $kk_betrag_int;
-            $kk_betrag = number_format ($kk_betrag, 2, '.', '');
-            $spar_betrag = ($spar_betrag_dec / 100 ) + $spar_betrag_int;
-            $spar_betrag = number_format ($spar_betrag, 2, '.', '');
-			$wp_betrag = ($wp_betrag_dec / 100 ) + $wp_betrag_int;
-            $wp_betrag = number_format ($wp_betrag, 2, '.', '');
-			$av_betrag = ($av_betrag_dec / 100 ) + $av_betrag_int;
-            $av_betrag = number_format ($av_betrag, 2, '.', '');
+            $bar_betrag = erzeugeDezimal($bar_betrag_dec, $bar_betrag_int);
+            $bank_betrag = erzeugeDezimal($bank_betrag_dec, $bank_betrag_int);
+            $kk_betrag = erzeugeDezimal($kk_betrag_dec, $kk_betrag_int);
+            $spar_betrag = erzeugeDezimal($spar_betrag_dec, $spar_betrag_int);
+			$wp_betrag = erzeugeDezimal($wp_betrag_dec, $wp_betrag_int);
+			$av_betrag = erzeugeDezimal($av_betrag_dec, $av_betrag_int);
 
             // ***** Parameter auslesen session *****
             $host = $_SESSION['host'];
