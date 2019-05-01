@@ -18,6 +18,7 @@
             } else {
             	$zahl_ges = ($zahl_dec / 100 ) + $zahl_int;
             }
+            $zahl_ges = number_format ($zahl_ges, 2, '.', '');
             return $zahl_ges;
 		}
 
@@ -40,18 +41,11 @@
             $av_betrag_dec = $_POST['av_betrag_dec'];
             $av_betrag_int = $_POST['av_betrag_int'];
             $bar_betrag = ($bar_betrag_dec / 100 ) + $bar_betrag_int;
-            $bar_betrag = number_format ($bar_betrag, 2, '.', '');
             $bank_betrag = setAmount($bank_betrag_int, $bank_betrag_dec);
-            $bank_betrag = number_format ($bank_betrag, 2, '.', '');
-            $kk_betrag = ($kk_betrag_dec / 100 ) + $kk_betrag_int;
             $kk_betrag = setAmount($kk_betrag_int, $kk_betrag_dec);
-            $kk_betrag = number_format ($kk_betrag, 2, '.', '');
             $spar_betrag = setAmount($spar_betrag_int, $spar_betrag_dec);
-            $spar_betrag = number_format ($spar_betrag, 2, '.', '');
 			$wp_betrag = setAmount($wp_betrag_int, $wp_betrag_dec);
-            $wp_betrag = number_format ($wp_betrag, 2, '.', '');
 			$av_betrag = setAmount($av_betrag_int, $av_betrag_dec);
-            $av_betrag = number_format ($av_betrag, 2, '.', '');
 
             // ***** Parameter auslesen session *****
             $host = $_SESSION['host'];

@@ -33,11 +33,12 @@
 	$passwort = $_SESSION['passwort'];
 	$dbname = $_SESSION['dbname'];
 
-	$con = mysql_connect($host, $benutzer, $passwort);
-	if (!$con) {
-		exit('Connect Error (' . mysql_errno() . ') ' . mysql_error());
-	}
-	mysql_select_db($dbname);
+    try {
+        $con = new PDO('mysql:host=' . $host . ';dbname=' . $dbname . ';charset=utf8', $benutzer, $passwort);
+    
+    } catch (PDOException $ex) {
+        die('Die Datenbank ist momentan nicht erreichbar!');
+    }
 	$akt_monat = date("Y-m-01");
 
 	if (isset($_GET['konto']))
@@ -53,21 +54,21 @@
 		// insert
 		$erstellt = date("Y-m-d H:i:s");
 		$jahrmonat = substr($datum,1,4) . substr($datum,5,2); //substring berechnen
-		$result = mysql_query("INSERT into kontobewegungen (transaktions_id,banktrans_id,datum,jahrmonat,konto,betrag,text,erstellt,status) values (" . $tid . "," . $id . ",'" . $datum . "'," . $jahrmonat . ",28000,'" . $betrag . "','" . $text . "','" . $erstellt . "','B')");
+		$result = $con->execute("INSERT into kontobewegungen (transaktions_id,banktrans_id,datum,jahrmonat,konto,betrag,text,erstellt,status) values (" . $tid . "," . $id . ",'" . $datum . "'," . $jahrmonat . ",28000,'" . $betrag . "','" . $text . "','" . $erstellt . "','B')");
 		if ($result)
 		{
 			$betrag = $betrag * -1;
-			$res = mysql_query("INSERT into kontobewegungen (transaktions_id,banktrans_id,datum,jahrmonat,konto,betrag,text,erstellt,status) values (" . $tid . "," . $id . ",'" . $datum . "'," . $jahrmonat . "," . $konto . ",'" . $betrag . "','" . $text . "','" . $erstellt . "','B')");
+			$res = $con->execute("INSERT into kontobewegungen (transaktions_id,banktrans_id,datum,jahrmonat,konto,betrag,text,erstellt,status) values (" . $tid . "," . $id . ",'" . $datum . "'," . $jahrmonat . "," . $konto . ",'" . $betrag . "','" . $text . "','" . $erstellt . "','B')");
 			if (!$res)
 			{
-				echo "MySQL Error (" . mysql_errno() . "): " . mysql_error();
+				'Fehler in der Abfrage. ' . htmlspecialchars($result->errorinfo()[2]));
 			}
 			else
 			{
-				$res2 = mysql_query("UPDATE bank set status='V' where banktrans_id=" . $id);
+				$res2 = $con->execute("UPDATE bank set status='V' where banktrans_id=" . $id);
 				if (!$res2)
 				{
-					echo "MySQL Error (" . mysql_errno() . "): " . mysql_error();
+					echo 'Fehler in der Abfrage. ' . htmlspecialchars($result->errorinfo()[2]);
 				}
 				else
 				{
@@ -77,7 +78,7 @@
 		}
 		else
 		{
-			echo "MySQL Error (" . mysql_errno() . "): " . mysql_error();
+			echo 'Fehler in der Abfrage. ' . htmlspecialchars($result->errorinfo()[2]);
 		}
 	}
 	else
@@ -86,9 +87,8 @@
 		$datum = $_GET['datum'];
 		$betrag = $_GET['betrag'];
 		$text = $_GET['text'];
-		$result = mysql_query("SELECT max(transaktions_id) from kontobewegungen");
-		if ($result) $max_tid = mysql_result($result,0,0);
-		$max_tid = $max_tid + 1;
+		$result = $con->execute("SELECT max(transaktions_id) from kontobewegungen");
+		$max_tid = $result->fetchColumn() +1;
 
 		echo "<br>";
 		echo "<form name = \"bankdetails\" action = \"insertbank.php\" >";
@@ -98,15 +98,12 @@
 		echo "<tr><td>Betrag</td><td><input type=text name=\"betrag\" size=10 value=\"" . $betrag . "\" readonly></td></tr>";
 		echo "<tr><td>Text</td><td><textarea name=\"text\" cols=\"50\" rows=\"5\" readonly>" . $text . "</textarea></td></tr>";
 		echo "<tr><td>Konto</td><td><select name=\"konto\" >";
-		$result = mysql_query("SELECT ktonr, bezeichnung from kontenstamm order by bezeichnung");
+		$result = $con->query("SELECT ktonr, bezeichnung from kontenstamm order by bezeichnung");
 		if ($result)
 		{
-			$num=mysql_numrows($result);
-			$i=0;
-			while ($i < $num)
+			while ($row = $result->fetch())
 			{
-				echo "<option value=" . mysql_result($result,$i,"ktonr") . ">" .  mysql_result($result,$i,"bezeichnung") . "</option>";
-				$i++;
+				echo "<option value=" . $row['ktonr'] . ">" .  $row['bezeichnung'] . "</option>";
 			}
 		}
 		echo "</select></td></tr>";

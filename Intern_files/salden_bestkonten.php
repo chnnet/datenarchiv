@@ -38,11 +38,13 @@
 	$passwort = "testchn";
 	$dbname = "datenarchiv";
 */
-	$con = mysql_connect($host, $benutzer, $passwort);
-	if (!$con) {
-		exit('Connect Error (' . mysql_errno() . ') ' . mysql_error());
-	}
-	mysql_select_db($dbname);
+    // DB-Connection
+    try {
+        $con = new PDO('mysql:host=' . $host . ';dbname=' . $dbname . ';charset=utf8', $benutzer, $passwort);
+    
+    } catch (PDOException $ex) {
+        die('Die Datenbank ist momentan nicht erreichbar!');
+    }
 	$akt_monat = date("Y-m-01");
 
 	if (isset($_GET['konto']))
@@ -51,7 +53,7 @@
 		$konto = $_GET['konto'];
 		$jahrmonat = $_GET['jahrmonat'];
 
-		$result = mysql_query("SELECT * from kontobewegungen where jahrmonat=" . $jahrmonat . " and konto = " . $konto);
+		$result = $con->query("SELECT * from kontobewegungen where jahrmonat=" . $jahrmonat . " and konto = " . $konto);
 		$saldo = 0;
 
 		echo "<br>";
@@ -59,13 +61,10 @@
 		echo "<tr><th>Text</th><th>Betrag</th></tr>";
 		if ($result)
 		{
-			$num=mysql_numrows($result);
-			$i=0;
-			while ($i < $num)
+			while ($row = $result->fetch())
 			{
-				echo "<tr><td>" . mysql_result($result,$i,"text") . "</td><td>" .  mysql_result($result,$i,"betrag") . "</td></tr>";
-				$saldo = $saldo + mysql_result($result,$i,"betrag");
-				$i++;
+				echo "<tr><td>" . $row['text'] . "</td><td>" .  $row['betrag'] . "</td></tr>";
+				$saldo = $saldo + $row['betrag'];
 			}
 		}
 		echo "<tr><td></td><td><b>" . $saldo . "</b></td>";
@@ -77,28 +76,23 @@
 		echo "<form name = \"salden_bkonten\" action = \"salden_bestkonten.php\" >";
 		echo "<table>";
 		echo "<tr><td>Konto</td><td><select name=\"konto\" >";
-		$result = mysql_query("SELECT ktonr, bezeichnung from kontenstamm where typ='B' order by bezeichnung");
+		$result = $con->query("SELECT ktonr, bezeichnung from kontenstamm where typ='B' order by bezeichnung");
 		if ($result)
 		{
-			$num=mysql_numrows($result);
-			$i=0;
-			while ($i < $num)
+			while ($row = $result->fetch())
 			{
-				echo "<option value=" . mysql_result($result,$i,"ktonr") . ">" .  mysql_result($result,$i,"bezeichnung") . "</option>";
+				echo "<option value=" . $row['ktonr'] . ">" .  $row['bezeichnung'] . "</option>";
 				$i++;
 			}
 		}
 		echo "</select></td></tr>";
 		echo "<tr><td>Monat</td><td><select name=\"jahrmonat\" >";
-		$res = mysql_query("SELECT distinct jahrmonat from kontobewegungen");
+		$res = $con->query("SELECT distinct jahrmonat from kontobewegungen");
 		if ($res)
 		{
-			$num=mysql_numrows($res);
-			$i=0;
-			while ($i < $num)
+			while ($row = $result->fetch())
 			{
-			echo "<option value=" . mysql_result($res,$i,"jahrmonat") . ">" . mysql_result($res,$i,"jahrmonat") . "</option>";
-				$i++;
+				echo "<option value=" . $row['jahrmonat'] . ">" . $row['jahrmonat'] . "</option>";
 			}
 		}
 		echo "</select></td></tr>";

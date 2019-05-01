@@ -104,8 +104,14 @@ $dbname = "datenarchiv";
 						if ($satz != 1)
 						{
 							// Create connection, write data
-							$conn = new mysqli($servername, $username, $password, $dbname);
-							if ($conn->query($sql) === TRUE) {
+    						// DB-Connection
+    						try {
+        						$conn = new PDO('mysql:host=' . $host . ';dbname=' . $dbname . ';charset=utf8', $benutzer, $passwort);
+    
+						    } catch (PDOException $ex) {
+        						die('Die Datenbank ist momentan nicht erreichbar!');
+    						}
+    							if ($conn->query($sql) === TRUE) {
     							echo "New record created successfully";
     							echo "Satz: " . $satz;
 							} else {
@@ -140,8 +146,14 @@ $dbname = "datenarchiv";
 
 			} // Ende Datensätze
 			// letzte Sätze rausschreiben
-			$conn = new mysqli($servername, $username, $password, $dbname);
-			if ($conn->query($sql) === TRUE) {
+    		// DB-Connection
+    		try {
+        		$conn = new PDO('mysql:host=' . $host . ';dbname=' . $dbname . ';charset=utf8', $benutzer, $passwort);
+    
+		    } catch (PDOException $ex) {
+        		die('Die Datenbank ist momentan nicht erreichbar!');
+   			}
+   			if ($conn->query($sql) === TRUE) {
 				echo "<br>Satz: " . $satz;
 				echo "<br>New record created successfully<br>";
 			} else {

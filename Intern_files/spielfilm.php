@@ -64,9 +64,12 @@
             $klass_id = $_POST['klass_id'];
             $genre = $_POST['genre'];
             $jahr = $_POST['jahr'];
-            $original = $_POST['originalversion'];
-            if ($original <> "true") $original = "false";
-            $dateiname = $_POST['dateiname'];
+			if (isset($_POST['originalversion'])) {     
+				$original = 1;
+				} else {
+				$original = 0; 
+			}      
+			$dateiname = $_POST['dateiname'];
 			$beschreibung = $_POST['beschreibung'];
 
             // ***** Parameter auslesen session *****
@@ -76,16 +79,20 @@
             $dbname = $_SESSION['dbname'];
             $benutzer_id = $_SESSION['keynr'];
 
-            $con = mysql_connect($host, $benutzer, $passwort);
-            mysql_select_db($dbname);
-
+		    // DB-Connection
+    		try {
+        		$con = new PDO('mysql:host=' . $host . ';dbname=' . $dbname . ';charset=utf8', $benutzer, $passwort);
+    
+    		} catch (PDOException $ex) {
+        		die('Die Datenbank ist momentan nicht erreichbar!');
+    		}
+    
             // Datenbank
             if ($titel != null)
             {
-                    $result = mysql_query("INSERT INTO spielfilme (titel,klass_id,genre,jahr,originalversion,dateiname,beschreibung) VALUES ('" . $titel . "'," . $klass_id . "," . $genre . ",'" . $jahr . "'," . $original . ",'" . $dateiname . "','" . $beschreibung . "')");
-                    if (!$result) {
-                        exit('MySQL Fehler: (' . mysql_errno() . ') ' . mysql_error());
-                    }
+                    $result = $con->prepare("INSERT INTO spielfilme (titel,klass_id,genre,jahr,originalversion,dateiname,beschreibung) VALUES (?,?,?,?,?,?,?)");
+                    $result->execute(array($titel, $klass_id, $genre, $jahr, $original, $dateiname, $beschreibung ))
+        				or die ('Fehler in der Abfrage. ' . htmlspecialchars($result->errorinfo()[2]));
 
             }
         }
@@ -129,7 +136,7 @@
 </tr>
 <tr>
 		<td>OV</td>
-		<td><input name="originalversion" type="checkbox" value="true"></td>
+		<td><input name="originalversion" type="checkbox"></td>
 </tr>
 <tr>
 		<td>Dateiname</td>

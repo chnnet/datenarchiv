@@ -27,17 +27,18 @@
             $dbname = $_SESSION['dbname'];
             $benutzer_id = $_SESSION['keynr'];
 
-            $con = mysql_connect($host, $benutzer, $passwort);
-            mysql_select_db($dbname);
-
-            // Datenbank
+		    // DB-Connection
+    		try {
+        		$con = new PDO('mysql:host=' . $host . ';dbname=' . $dbname . ';charset=utf8', $benutzer, $passwort);
+    
+		    } catch (PDOException $ex) {
+        		die('Die Datenbank ist momentan nicht erreichbar!');
+    		}            // Datenbank
             if ($software != null)
             {
 
-                    $result = mysql_query("INSERT INTO software_keys VALUES ('" . $software . "','" . $version . "','" . $lickey . "','" . $betriebssystem . "')");
-                    if (!$result) {
-                        exit('MySQL Fehler: (' . mysql_errno() . ') ' . mysql_error());
-                    }
+                    $result = $con->execute("INSERT INTO software_keys VALUES ('" . $software . "','" . $version . "','" . $lickey . "','" . $betriebssystem . "')")
+				        or die ('Fehler in der Abfrage. ' . htmlspecialchars($result->errorinfo()[2]));
 
             }
             else
