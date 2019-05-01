@@ -28,22 +28,26 @@
             $dbname = $_SESSION['dbname'];
             $benutzer_id = $_SESSION['keynr'];
 
-            $con = mysql_connect($host, $benutzer, $passwort);
-            mysql_select_db($dbname);
+			// DB-Connection
+			try {
+				$con = new PDO('mysql:host=' . $host . ';dbname=' . $dbname . ';charset=utf8', $benutzer, $passwort);
+
+			} catch (PDOException $ex) {
+				die('Die Datenbank ist momentan nicht erreichbar!');
+			}
 
             // Datenbank
             if ($text != null)
             {
 					// prüfen ob für menu_id schon Wert eingetragen
-                    $result = mysql_query("select max(menu_id) from menu");
-                    $row = mysql_fetch_row($result);
-                    $max_menuid = $row[0];
-                    mysql_free_result($result);
+                    $result = $con->query("select max(menu_id) from menu");
+                    $max_menuid = $result->fetchColumn();
+                    // mysql_free_result($result); -> noch keinen Ersatz in PHP7 gefunden
 
-					$result = mysql_query("INSERT INTO menu VALUES (" . $menu_id . ",'" . $name . "','" . $pfad_file . "','" . $pfad_icon . "','" . $target . "')");
-					if (!$result) {
-						exit('MySQL Fehler: (' . mysql_errno() . ') ' . mysql_error());
-					}
+					$result = $con->prepare("INSERT INTO menu VALUES (?,?,?,?,?)");
+					$result->execute(array($menu_id, $name, $pfad_file, $pfad_icon, $target))
+    					or die ('Fehler in der Abfrage. ' . htmlspecialchars($result->errorinfo()[2]));
+
             }
 		}
 

@@ -29,28 +29,26 @@
         $passwort = $_SESSION['passwort'];
         $dbname = $_SESSION['dbname'];
         
-	// ***** Verbindugsaufbau zu MySQL *****
+	try {
+		$con = new PDO('mysql:host=' . $host . ';dbname=' . $dbname . ';charset=utf8', $benutzer, $passwort);
 
-		$con = mysql_connect($host, $benutzer, $passwort);
-		if (!$con) {
-			exit('Connect Error (' . mysql_connect_errno() . ') ' . mysql_connect_error());
-		}
+	} catch (PDOException $ex) {
+		die('Die Datenbank ist momentan nicht erreichbar!');
+	}
 
-		mysql_select_db($dbname);
-		$result = mysql_query('SELECT k.bezeichnung, f.Titel, f.Filename, f.datum, f.Quelle from file_archiv f, std_klassifizierung k where f.klass_id=k.klass_id and f.Titel like \'%' . $titel . '%\'');
+		$result = $con->prepare('SELECT k.bezeichnung, f.Titel, f.Filename, f.datum, f.Quelle from file_archiv f, std_klassifizierung k where f.klass_id=k.klass_id and f.Titel like \'%' . $titel . '%\'');
+		$result->execute(array($titel))
+			or die ('Fehler bei der Suche! ' . htmlspecialchars($result->errorinfo()[2]));
 		if (!$result) {
-			exit('Query Fehler (' . mysql_connect_errno() . ') ' . mysql_connect_error());
+			exit('Abfrage lieferte keine Ergebnisse!');
 		} else
                 {
-                    $num=mysql_numrows($result);
                     echo "<table border=\"1\"><tr><th>Klassifizierung</th><th>Titel</th><th>Filename</th><th>Datum</th><th>Quelle</th></tr>";
 
-                    $i=0;
-                    while ($i < $num) {
+                    while ($row = $result->fetch()) {
 
                             // Suchergebnis in Liste anzeigen
-                            echo "<tr><td>" . mysql_result($result,$i,"k.bezeichnung") . "</td><td>" . mysql_result($result,$i,"f.Titel") . "</td><td>" . mysql_result($result,$i,"f.Filename") . "</td><td>" . mysql_result($result,$i,"f.datum") . "</td><td>" . mysql_result($result,$i,"f.Quelle") . "</td></tr>";
-                            $i++;
+                            echo "<tr><td>" . $row['bezeichnung'] . "</td><td>" . $row['Titel'] . "</td><td>" $row['Filename'] . "</td><td>" . $row['datum'] . "</td><td>" . $row['Quelle'] . "</td></tr>";
                     }
                     echo "</table>";
                 }

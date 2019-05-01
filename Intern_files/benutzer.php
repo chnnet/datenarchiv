@@ -30,18 +30,17 @@ and open the template in the editor.
         $passwort = $_SESSION['passwort'];
         $dbname = $_SESSION['dbname'];
 
-	// ***** Verbindugsaufbau zu MySQL *****
+		// DB-Connection
+		try {
+			$con = new PDO('mysql:host=' . $host . ';dbname=' . $dbname . ';charset=utf8', $benutzer, $passwort);
 
-		$con = mysql_connect($host, $benutzer, $passwort);
-		if (!$con) {
-			exit('Connect Error (' . mysql_errno() . ') ' . mysql_error());
+		} catch (PDOException $ex) {
+			die('Die Datenbank ist momentan nicht erreichbar!');
 		}
-
-		mysql_select_db($dbname);
-		$result = mysql_query('INSERT INTO benutzer values (' . $login . ',\'' . $passwort . '\',\'' . $vorname . '\',\'' . $nachname . '\',\'' . $kuerzel . '\')');
-		if (!$result) {
-			exit('Query Fehler (' . mysql_errno() . ') ' . mysql_error());
-		}
+		//$result = mysql_query('INSERT INTO benutzer values (' . $login . ',\'' . $passwort . '\',\'' . $vorname . '\',\'' . $nachname . '\',\'' . $kuerzel . '\')');
+		$result = $con->prepare('INSERT INTO benutzer values (?,?,?,?,?)');
+		$result->execute(array($login, $passwort, $vorname, $nachname, $kuerzel))
+		    or die ('Fehler in der Abfrage. ' . htmlspecialchars($result->errorinfo()[2]));
 
 	} else // Form
         {

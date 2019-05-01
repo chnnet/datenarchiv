@@ -28,32 +28,20 @@ and open the template in the editor.
         $passwort = $_SESSION['passwort'];
         $dbname = $_SESSION['dbname'];
 
-	// ***** Verbindugsaufbau zu MySQL *****
+	// DB-Connection
+	try {
+		$con = new PDO('mysql:host=' . $host . ';dbname=' . $dbname . ';charset=utf8', $benutzer, $passwort);
 
-		$con = mysql_connect($host, $benutzer, $passwort);
-		if (!$con) {
-			exit('Connect Error (' . mysql_connect_errno() . ') ' . mysql_connect_error());
-		}
+	} catch (PDOException $ex) {
+		die('Die Datenbank ist momentan nicht erreichbar!');
+	}
 
-		mysql_select_db($dbname);
-		$result = mysql_query('INSERT INTO menu values (\'' . $name . '\',\'' . $pfad_file . '\',\'' . $pfad_icon . '\',\'' . $target . '\')');
+
+		$ins = $con->prepare('INSERT INTO menu values (\'' . $name . '\',\'' . $pfad_file . '\',\'' . $pfad_icon . '\',\'' . $target . '\')');
+		$result = $ins->execute(array($name, $pfad_file, $pfad_icon, $traget))
+			or die('Fehler beim Einfügen!');
 		if (!$result) {
-			exit('Query Fehler (' . mysql_connect_errno() . ') ' . mysql_connect_error());
-		} else
-                {
-                    $num=mysql_numrows($result);
-                    echo "<table border=\"1\"><tr><th>Klassifizierung</th><th>Titel</th><th>Filename</th><th>Datum</th><th>Quelle</th></tr>";
-
-                    $i=0;
-                    while ($i < $num) {
-
-                            // Suchergebnis in Liste anzeigen
-                            echo "<tr><td>" . mysql_result($result,$i,"k.bezeichnung") . "</td><td>" . mysql_result($result,$i,"f.Titel") . "</td><td>" . mysql_result($result,$i,"f.Filename") . "</td><td>" . mysql_result($result,$i,"f.datum") . "</td><td>" . mysql_result($result,$i,"f.Quelle") . "</td></tr>";
-                            $i++;
-                    }
-                    echo "</table>";
-                }
-
+			exit('Fehler beim Einfügen!');
 	} else // Form
         {
 ?>
@@ -86,7 +74,7 @@ and open the template in the editor.
             </tr>
             </table>
 
-            <input type=hidden name="blgform" value="1"/>
+            <input type=hidden name="admin_menu" value="1"/>
             <input type=submit value="Speichern"/>
             </form>
  <?php

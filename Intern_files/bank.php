@@ -38,28 +38,29 @@
 	$passwort = "testchn";
 	$dbname = "datenarchiv";
 */
-	$con = mysql_connect($host, $benutzer, $passwort);
-	if (!$con) {
-		exit('Connect Error (' . mysql_errno() . ') ' . mysql_error());
+	try {
+		$con = new PDO('mysql:host=' . $host . ';dbname=' . $dbname . ';charset=utf8', $benutzer, $passwort);
+
+	} catch (PDOException $ex) {
+		die('Die Datenbank ist momentan nicht erreichbar!');
 	}
 
-	mysql_select_db($dbname);
 	$akt_monat = date("Y-m-01");
-	$result = mysql_query("SELECT banktrans_id, datum, betrag, text, status from bank where datum >= '" . $akt_monat . "' and status ='I'");
+	$result = $con->prepare("SELECT banktrans_id, datum, betrag, text, status from bank where datum >= '" . $akt_monat . "' and status ='I'");
+	$result->execute(array($$akt_monat))
+    	or die ('Fehler in der Abfrage. ' . htmlspecialchars($result->errorinfo()[2]));
+
 
 	if ($result)
 	{
-		$num=mysql_numrows($result);
+		$num= $result->rowCount();
 		if ($num > 0)
-			$i=0;
-			echo "<table border=1>";
-			echo "<tr><th></th><th>Datum</th><th>Betrag</th><th>Text</th></tr>";
-			while ($i < $num)
-			{
+				echo "<table border=1>";
+				echo "<tr><th></th><th>Datum</th><th>Betrag</th><th>Text</th></tr>";
+			while ($row = $result->fetch()) {
 				// status berücksichtigen
 				$id = mysql_result($result,$i,"banktrans_id");
 				echo "<tr><td><a href=\"insertbank.php?banktrans_id=" . $id . "&datum=" . mysql_result($result,$i,"datum") . "&betrag=" . mysql_result($result,$i,"betrag") . "&text=" . mysql_result($result,$i,"text") . "\" target=\"_blank\">" . $id . "</a></td><td>" . mysql_result($result,$i,"datum") . "</td><td align=right>" . mysql_result($result,$i,"betrag") . "</td><td>" . mysql_result($result,$i,"text") . "</td></tr>";
-				$i++;
 			}
 			echo "<table border=1>";
 		}

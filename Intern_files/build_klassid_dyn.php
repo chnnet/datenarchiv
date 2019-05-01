@@ -10,48 +10,39 @@
 		$jsstring =  "var klass_bez = new Array(); ";
 		$jsstring =  "var group_id = new Array(); ";
 
-		sqlstatement = ($hierarchie);
-		mysql_select_db($dbname);
-		$result = mysql_query($sql);
-        $num=mysql_num_rows($result);
-        if (!$result)
-        {
-            //exit('MySQL Fehler: (' . mysql_errno() . ') ' . mysql_error());
-            $fehler = "MySQL Fehler: (" . mysql_errno() . ") " . mysql_error();
-        }
-        else
-        {
-            // $fehler = "Query: " . $num;
-            $i=0;
-            $rownum=0;
-            while ($i < $num) {
+		$sqlstatement = ($hierarchie);
+		// DB-Connection
+		try {
+			$con = new PDO('mysql:host=' . $host . ';dbname=' . $dbname . ';charset=utf8', $benutzer, $passwort);
 
+		} catch (PDOException $ex) {
+			die('Die Datenbank ist momentan nicht erreichbar!');
+		}
+
+		$result = $con->query($sql);
+		    or die ('Fehler in der Abfrage. ' . htmlspecialchars($result->errorinfo()[2]));
+
+        $rownum=0;
+		while ($row = $result->fetch()) {
+		
                     $rownum++;
-                    $jsstring = "groups[" . $rownum . "] = \"" . mysql_result($result,$i,"k.bezeichnung") . "\";";
-                    $jsstring = "group_id[" . $rownum . "] = \"" . mysql_result($result,$i,"s.klass_id") . "\";";
+                    $jsstring = "groups[" . $rownum . "] = \"" . $row['bezeichnung'] . "\";";
+                    $jsstring = "group_id[" . $rownum . "] = \"" . $row['klass_id'] . "\";";
                     $jsstring = "klass_id[" . $rownum . "] = new Array();";
                     $jsstring = "klass_bez[" . $rownum . "] = new Array();";
 
-                    $result2 = mysql_query("select s.klass_id,k.bezeichnung from std_klass_hier_strukturen s, std_klassifizierung k where k.klass_id=s.klass_id AND parent_id=" . mysql_result($result,$i,"s.klass_id") . " group by k.bezeichnung");
-                    if (!$result2)
-                    {
-                        $fehler = "MySQL Fehler: (" . mysql_errno() . ") " . mysql_error();
-                    }
-                    else
-                    {
-                        $num2 = mysql_num_rows($result2);
+					// Check of SQL mit var auch ohne prepare funktioniert!
+                    $result2 = $con->query("select s.klass_id,k.bezeichnung from std_klass_hier_strukturen s, std_klassifizierung k where k.klass_id=s.klass_id AND parent_id=" . $row['klass_id'] . " group by k.bezeichnung")
+                    	    or die ('Fehler in der Abfrage. ' . htmlspecialchars($result->errorinfo()[2]));
                         $cnt = 0;
-                        while ( $cnt < $num2 )
+                        while ( $row = $result->fetch() )
                         {
                             //$fehler .= " Subquery: " . mysql_result($result2,$cnt,"k.bezeichnung");
-                            $jsstring = "klass_id[" . $rownum . "][" . $cnt . "] = \"" . mysql_result($result2,$cnt,"s.klass_id") . "\";";
-                            $jsstring = "klass_bez[" . $rownum . "][" . $cnt . "] = \"" . mysql_result($result2,$cnt,"k.bezeichnung") . "\";";
+                            $jsstring = "klass_id[" . $rownum . "][" . $cnt . "] = \"" . $row['klass_id'] . "\";";
+                            $jsstring = "klass_bez[" . $rownum . "][" . $cnt . "] = \"" . $row['bezeichnung'] . "\";";
                             $cnt++;
                         }
-                    }
-            $i++;
-            }
-
         }
+
 	}
 ?>

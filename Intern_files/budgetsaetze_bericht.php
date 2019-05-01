@@ -16,29 +16,10 @@
         <?php
         // put your code here
 
-        if (isset($_POST['haeufigkeit'])) // Auswahl Häufigkeit als Filter berücksichtigen
-        {
-
-            // ***** Parameter auslesen - Seite *****
-
-            $anmerkung = $_POST['anmerkung'];
-            $budget_id = $_POST['budget_id'];
-            $konto = $_POST['konto'];
-            $betrag_dec = $_POST['betrag_dec'];
-            $betrag_int = $_POST['betrag_int'];
-            $haeufigkeit = $_POST['haeufigkeit'];
-            $gueltigab = $_POST['gueltigab'];
-            $gueltigbis = $_POST['gueltigbis'];;
-            $betrag = ($betrag_dec / 100 ) + $betrag_int;
-
-            // String sql = "";
-            // int test;
-            //global $max_vid;
-} // isset
 echo '<h2>Budgetposten Details</h2>';
 echo '<br>';
 
-echo '<form name=\"budget_erfassen\" action=\"erf_budget.php\" target=\"main\" method=\"post\">';
+echo '<form name="budget_bericht" action="budgetsaetze_bericht.php" target="main" method="post">';
 echo '<table>';
 echo '<tr>';
 		echo '<td>H&auml;ufigkeit</td>';
@@ -60,28 +41,51 @@ echo '<tr>';
 		echo '</td>';
 echo '</tr>';
 echo '</table>';
-echo '<table border=1>';
-            // ***** Parameter auslesen session *****
-            $host = 'localhost';
-//Test
-            $benutzer = 'root';
-            $passwort = '';
-            $dbname = 'test';
-//            $benutzer_id = $_SESSION['keynr'];
 
-            $con = new mysqli($host, $benutzer, $passwort, $dbname);
-//            mysqli_select_db($dbname);
+
+echo '<table>';
+echo '<input type=submit value="Neu filtern"/>';
+echo '</table>';
+
+echo '<table border=1>';
+
+            // ***** Parameter auslesen session *****
+			$host = $_SESSION['host'];
+			$benutzer = $_SESSION['benutzer'];
+			$passwort = $_SESSION['passwort'];
+			$dbname = $_SESSION['dbname'];
+
+
+			// DB-Connection
+			try {
+				$con = new PDO('mysql:host=' . $host . ';dbname=' . $dbname . ';charset=utf8', $benutzer, $passwort);
+
+			} catch (PDOException $ex) {
+				die('Die Datenbank ist momentan nicht erreichbar!');
+			}
+
+        if (isset($_POST['haeufigkeit'])) // Auswahl Häufigkeit als Filter berücksichtigen
+        {
+
+            // ***** Parameter auslesen - Seite *****
+            $haeufigkeit = $_POST['haeufigkeit'];
+            $gueltig = $_POST['gueltig'];
+            $result = $con->prepare("select * from budget where gueltigbis >= YEAR(curdate())*100 + MONTH(curdate()) and haeufigkeit = '" . $haeufigkeit . "' order by haeufigkeit, ktonr");            
+			$result->execute(array($haeufigkeit))
+			    or die ('Fehler in der Abfrage. ' . htmlspecialchars($result->errorinfo()[2]));
+
+        } else { // Filter gesetzt
+
+            
+            $result = $con->query("select * from budget where gueltigbis >= YEAR(curdate())*100 + MONTH(curdate()) order by haeufigkeit, ktonr");
+            
+		} // isset
 
             // Datenbank
 //            if ($anmerkung != null)
 //            {
-
-                    $result = $con->query("select * from budget where gueltigbis >= YEAR(curdate())*100 + MONTH(curdate())");
-                    if (!$result) {
-                        exit('MySQL Fehler: (' . mysqli_errno() . ') ' . mysqli_error());
-                    }
-                    else
-                    {
+					$summe = 0;
+                    if ($result) {
                     	// result
 
 			    		if ($result->num_rows > 0) {
@@ -98,8 +102,15 @@ echo '<table border=1>';
     					    // output data of each row
 	    			    	while($row = $result->fetch_assoc()) {
 				    			echo '<tr>';
+				    			if ($row['ktonr'] < 20000)
+				    			{
+									$summe = $summe + $row['betrag'];		
+				    			} else {
+									$summe = $summe - $row['betrag'];		
+				    			}
 	    			    		$zaehler = 0;
 	    			    		foreach ($row as $val) {
+
 	    			    			while ($zaehler < $feldanzahl) {
 		    			    			echo '<td>' . $row[$felder[$zaehler]] . '</td>';
 		    			    			$zaehler++;
@@ -109,6 +120,7 @@ echo '<table border=1>';
 // Feldwerte korrekt auslesen        		    			echo "id: " . $row["id"]. " - Name: " . $row["firstname"]. " " . $row["lastname"]. "<br>";
 		        			}
 		        			echo '</table>';
+		        			echo 'Gesamtsumme: ' . $summe;
 		    			} else {
     		    			echo "0 results";
 				    	}
@@ -120,15 +132,6 @@ echo '<table border=1>';
 // isset        }
         
         
-?>
-
-
-</table>
-<input type=submit value="Neu filtern"/>
-
-<table>
-<?php
-
 ?>
 
 </form>

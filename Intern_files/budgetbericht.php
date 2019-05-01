@@ -85,9 +85,12 @@ function gueltigAb($haeufigkeit, $akt_periode, $gueltigab) {
 	return $monat;
 }
 
-$con = mysql_connect($host, $benutzer, $passwort);
-if (!$con) {
-	exit('Connect Error (' . mysql_errno() . ') ' . mysql_error());
+// DB-Connection
+try {
+	$con = new PDO('mysql:host=' . $host . ';dbname=' . $dbname . ';charset=utf8', $benutzer, $passwort);
+
+} catch (PDOException $ex) {
+	die('Die Datenbank ist momentan nicht erreichbar!');
 }
 
 global $saldo;
@@ -117,16 +120,18 @@ if ($monat > 12)
 	$end_periode = (($akt_jahr + 1) * 100) + ($monat - 13);
 }
 	// Anfangssaldo aus Vermögen errechnen, array für salden errechnen
-	mysql_select_db($dbname);
 	// Anfangssaldo holen
 	$vormonat = $akt_periode - 1;
-	$res_saldo = mysql_query("SELECT saldo_bargeld, saldo_bank, saldo_kreditkarte, saldo_verrAnita from vermoegen where jahrmonat=" . $vormonat);
+	$res_saldo = $con->prepare("SELECT saldo_bargeld, saldo_bank, saldo_kreditkarte, saldo_verrAnita from vermoegen where jahrmonat=" . $vormonat);
+	$res_saldo->execute(array($vormonat))
+		or die ('Fehler in der Abfrage. ');
 	if ($res_saldo)
 	{
-		$bargeld = mysql_result($res_saldo,0,0);
-		$bank = mysql_result($res_saldo,0,1);
-		$kreditkarte = mysql_result($res_saldo,0,2);
-		$anita_verr = mysql_result($res_saldo,0,3);
+		$row = $res_saldo->fetch();
+		$bargeld = $row['$saldo_bargeld'];
+		$bank = $row['$saldo_bank'];
+		$kreditkarte = $row['$saldo_kreditkarte'];
+		$anita_verr = $row['$saldo_verrAnita'];
 	}
 	else
 	{
@@ -137,22 +142,20 @@ if ($monat > 12)
 	}
 
 	// Budgetsätze nach Konto sortiert
-	$result = mysql_query("SELECT * from budget b, kontenstamm k where b.ktonr = k.ktonr and b.gueltigab <= " . $end_periode .  " and (b.gueltigbis >= " . $end_periode .  " or b.gueltigbis between " . $akt_periode . " and " . $end_periode . ") and b.budget_id=1 order by b.ktonr, b.gueltigab");
+	$result = $con->prepare("SELECT * from budget b, kontenstamm k where b.ktonr = k.ktonr and b.gueltigab <= " . $end_periode .  " and (b.gueltigbis >= " . $end_periode .  " or b.gueltigbis between " . $akt_periode . " and " . $end_periode . ") and b.budget_id=1 order by b.ktonr, b.gueltigab");
+	$result->execute(array($end_periode, $end_periode, $akt_periode, $end_periode));
         if ($result)
         {
-            $num=mysql_numrows($result);
-
-	    		$summe = 0;
-            $i=0;
-            while ($i < $num) {
+	    	$summe = 0;
+			while ($row = $result->fetch()) {
 
 					// Felder belegen
-					$bezeichnung = mysql_result($result,$i,"bezeichnung");
-					$gueltigab = mysql_result($result,$i,"gueltigab");
-					$gueltigbis = mysql_result($result,$i,"gueltigbis");
-					$haeufigkeit = mysql_result($result,$i,"haeufigkeit");
-					$vorzeichen = mysql_result($result,$i,"vorzeichen");
-					$betrag = mysql_result($result,$i,"betrag");
+					$bezeichnung = $row['bezeichnung'];
+					$gueltigab = $row['gueltigab'];
+					$gueltigbis = $row['gueltigbis'];
+					$haeufigkeit = $row['haeufigkeit'];
+					$vorzeichen = $row['vorzeichen'];
+					$betrag = $row['betrag'];
 
 					// kontonr, Periode noch berücksichtigen?
 					$zaehler = 1;
@@ -223,7 +226,6 @@ if ($monat > 12)
 						$wertepaare[$gueltigab] = $vorzeichen . $betrag;
 					}
 
-					$i++;
             } // while resultset
 
 			// Wert aus letzdem while-Durchlauf hinzufügen
@@ -316,7 +318,7 @@ if ($monat > 12)
         }
         else {
         	echo "Keine Daten!<br>";
-			echo "MySQL Error (" . mysql_errno() . ") :" . mysql_error();
+			echo 'Fehler in der Abfrage. ';
 
         }
 ?>
