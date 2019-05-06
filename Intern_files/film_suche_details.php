@@ -32,32 +32,30 @@
         $passwort = $_SESSION['passwort'];
         $dbname = $_SESSION['dbname'];
         
-	// ***** Verbindugsaufbau zu MySQL *****
+	// DB-Connection
+	try {
+		$con = new PDO('mysql:host=' . $host . ';dbname=' . $dbname . ';charset=utf8', $benutzer, $passwort);
 
-		$con = mysql_connect($host, $benutzer, $passwort);
-		if (!$con) {
-			exit('Connect Error (' . mysql_connect_errno() . ') ' . mysql_connect_error());
-		}
-
-		mysql_select_db($dbname);
+	} catch (PDOException $ex) {
+		die('Die Datenbank ist momentan nicht erreichbar!');
+	}
 
 		if ($filmID)
 		{
-			$result = mysql_query('SELECT * from spielfilme s, std_klassifizierung k where s.genre=k.klass_id and s.spielfilme_id = ' . $filmID);
+			$result = $con->prepare('SELECT * from spielfilme s, std_klassifizierung k where s.genre=k.klass_id and s.spielfilme_id = ' . $filmID);
+			$result->execute(array($filmID))
 		}
 		
 		if (!$result) {
-			exit('Query Fehler (' . mysql_connect_errno() . ') ' . mysql_connect_error());
+			exit('Fehler in der Abfrage. ' . htmlspecialchars($result->errorinfo()[2]));
 		} else
                 {
-                    $num=mysql_numrows($result);
                     echo "<table border=1>";
 
-                    $i=0;
-                    while ($i < $num) {
+                    while ($row = $result->fetch()) {
 							
 							// Originalversion
-							$originaltab = mysql_result($result,$i,"s.originalversion");
+							$originaltab = $row['originalversion'];
 							if ($originaltab <> 0) { 
 								$originaltab = "x";
 								}
@@ -66,7 +64,7 @@
 								}
 							
                             // Suchergebnis in Liste anzeigen
-                            echo "<tr><td>Nummer</td><td>" . mysql_result($result,$i,"s.spielfilme_id") . "</td><tr><td>Titel</td><td>" . mysql_result($result,$i,"s.titel") . "</td></tr><tr><td>Jahr</td><td>" . mysql_result($result,$i,"s.jahr") . "</td></tr><tr><td>Genre</td><td>" . mysql_result($result,$i,"k.bezeichnung") . "</td></tr><tr><td>Beschreibung</td><td>" . mysql_result($result,$i,"s.beschreibung") . "</td></tr><tr><td>Originalversion</td><td align=center>" . $originaltab . "</td></tr>";
+                            echo "<tr><td>Nummer</td><td>" . $row['spielfilme_id'] . "</td><tr><td>Titel</td><td>" . $row['titel'] . "</td></tr><tr><td>Jahr</td><td>" . $row['jahr'] . "</td></tr><tr><td>Genre</td><td>" . $row['bezeichnung'] . "</td></tr><tr><td>Beschreibung</td><td>" . $row['beschreibung'] . "</td></tr><tr><td>Originalversion</td><td align=center>" . $originaltab . "</td></tr>";
                             $i++;
                     }
                     echo "</table><br>";

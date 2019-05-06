@@ -10,12 +10,13 @@
 	$benutzer = $_SESSION['benutzer'];
 	$passwort = $_SESSION['passwort'];
 	$dbname = $_SESSION['dbname'];
-        $con = mysql_connect($host, $benutzer, $passwort);
-        if (!$con) {
-                exit('Connect Error (' . mysql_errno() . ') ' . mysql_error());
-        }
-
-        mysql_select_db($dbname);
+    // DB-Connection
+    try {
+        $con = new PDO('mysql:host=' . $host . ';dbname=' . $dbname . ';charset=utf8', $benutzer, $passwort);
+    
+    } catch (PDOException $ex) {
+        die('Die Datenbank ist momentan nicht erreichbar!');
+    }
 
 	$sJSLogic = "<script language=\"JavaScript\">";
 
@@ -24,21 +25,19 @@
 
 // ***** Verbindugsaufbau zu MySQL *****
 
-        $result = mysql_query("SELECT DISTINCT jahrmonat FROM salden_monat_verrechnung order by jahrmonat desc");
+        $result = $con->query("SELECT DISTINCT jahrmonat FROM salden_monat_verrechnung order by jahrmonat desc");
         if ($result)
         {
-            $num=mysql_numrows($result);
+			i=0;
+            while ($row = $result->fetch()) {
 
-            $i=0;
-            while ($i < $num) {
-
-                $sJSLogic .= "monat[" . $i . "] = \"" . mysql_result($result,$i,"jahrmonat") . "\";";
+                $sJSLogic .= "monat[" . $i . "] = \"" . $row['jahrmonat'] . "\";";
                 $i++;
             }
         }
         else
         {
-            echo "Fehler Seltrans: (" . mysql_errno() . ") " . mysql_error();
+            echo 'Fehler in der Abfrage. ' . htmlspecialchars($result->errorinfo()[2]);
         }
 
 

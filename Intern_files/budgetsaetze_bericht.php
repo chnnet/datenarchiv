@@ -16,22 +16,6 @@
         <?php
         // put your code here
 
-        if (isset($_POST['haeufigkeit'])) // Auswahl Häufigkeit als Filter berücksichtigen
-        {
-
-            // ***** Parameter auslesen - Seite *****
-            $haeufigkeit = $_POST['haeufigkeit'];
-            $gueltig = $_POST['gueltig'];
-            $sql = ("select * from budget where gueltigbis >= YEAR(curdate())*100 + MONTH(curdate()) and haeufigkeit = '" . $haeufigkeit . "' order by haeufigkeit, ktonr");            
-            
-            
-        } else { // Filter gesetzt
-
-            
-            $sql = ("select * from budget where gueltigbis >= YEAR(curdate())*100 + MONTH(curdate()) order by haeufigkeit, ktonr");
-            
-            
-		} // isset
 echo '<h2>Budgetposten Details</h2>';
 echo '<br>';
 
@@ -72,18 +56,36 @@ echo '<table border=1>';
 			$dbname = $_SESSION['dbname'];
 
 
-            $con = new mysqli($host, $benutzer, $passwort, $dbname);
+			// DB-Connection
+			try {
+				$con = new PDO('mysql:host=' . $host . ';dbname=' . $dbname . ';charset=utf8', $benutzer, $passwort);
+
+			} catch (PDOException $ex) {
+				die('Die Datenbank ist momentan nicht erreichbar!');
+			}
+
+        if (isset($_POST['haeufigkeit'])) // Auswahl Häufigkeit als Filter berücksichtigen
+        {
+
+            // ***** Parameter auslesen - Seite *****
+            $haeufigkeit = $_POST['haeufigkeit'];
+            $gueltig = $_POST['gueltig'];
+            $result = $con->prepare("select * from budget where gueltigbis >= YEAR(curdate())*100 + MONTH(curdate()) and haeufigkeit = '" . $haeufigkeit . "' order by haeufigkeit, ktonr");            
+			$result->execute(array($haeufigkeit))
+			    or die ('Fehler in der Abfrage. ' . htmlspecialchars($result->errorinfo()[2]));
+
+        } else { // Filter gesetzt
+
+            
+            $result = $con->query("select * from budget where gueltigbis >= YEAR(curdate())*100 + MONTH(curdate()) order by haeufigkeit, ktonr");
+            
+		} // isset
 
             // Datenbank
 //            if ($anmerkung != null)
 //            {
 					$summe = 0;
-                    $result = $con->query($sql);
-                    if (!$result) {
-                        exit('MySQL Fehler: (' . mysqli_errno() . ') ' . mysqli_error());
-                    }
-                    else
-                    {
+                    if ($result) {
                     	// result
 
 			    		if ($result->num_rows > 0) {

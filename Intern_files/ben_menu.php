@@ -26,11 +26,13 @@ and open the template in the editor.
         global $reihenf;
 
 	// ***** Parameter auslesen session *****
-        $host = $_SESSION['host'];
-        $benutzer = $_SESSION['benutzer'];
-        $passwort = $_SESSION['passwort'];
-        $dbname = $_SESSION['dbname'];
-
+        if (isset($_SESSION['host'])) {
+        
+            $host = $_SESSION['host'];
+	        $benutzer = $_SESSION['benutzer'];
+    	    $passwort = $_SESSION['passwort'];
+        	$dbname = $_SESSION['dbname'];
+		}
 
 	// ***** Parameter auslesen - Seite *****
         if (isset($_POST['benutzer_id'])) {
@@ -55,21 +57,21 @@ and open the template in the editor.
 
                     if ( $klass_id )
                     {
-                            $sql = "INSERT INTO benutzer_menu VALUES (" . $benutzer_id . "," . $menu_id . "," . $parent_id . ",'" . $reihenf . ")";
+                            // $sql = "INSERT INTO benutzer_menu VALUES (" . $benutzer_id . "," . $menu_id . "," . $parent_id . ",'" . $reihenf . ")";
+                            $sql = "INSERT INTO benutzer_menu VALUES ('?,?,?,?')";
                     }
 
-                    mysql_connect($host,$benutzer,$passwort);
-                    mysql_select_db($dbname);
-                    $result = mysql_query($sql);
-                    if (!$result)
-                    {
-                        //exit('MySQL Fehler: (' . mysql_errno() . ') ' . mysql_error());
-                        $fehler = "MySQL Fehler: (" . mysql_errno() . ") " . mysql_error();
-                    }
-                    else
-                    {
-                        $message = "Satz in Benutzer-Men&uuml; wurde erfolgreich angelegt!";
-                    }
+					// DB-Connection
+					try {
+						$con = new PDO('mysql:host=' . $host . ';dbname=' . $dbname . ';charset=utf8', $benutzer, $passwort);
+
+					} catch (PDOException $ex) {
+						die('Die Datenbank ist momentan nicht erreichbar!');
+					}
+                    $result = $con->prepare($sql);
+                    $result->execute(array($benutzer_id, $menu_id, $parent_id, $reihenf))
+                    	or die ('Fehler beim INSERT!' . htmlspecialchars($result->errorinfo()[2]));
+//                        $message = "Satz in Benutzer-Men&uuml; wurde erfolgreich angelegt!";
         }
 ?>
 
@@ -87,30 +89,22 @@ and open the template in the editor.
 	<select name="benutzer_id" >
 <?php
             // Hierarchiewerte laden bzw. Übergabewert selektieren
-            mysql_connect($host,$benutzer,$passwort);
-            mysql_select_db($dbname);
-            $result = mysql_query("SELECT keynr, login FROM benutzer order by login");
-            if (!$result)
-            {
-                //exit('MySQL Fehler: (' . mysql_errno() . ') ' . mysql_error());
-                $fehler = "MySQL Fehler: (" . mysql_errno() . ") " . mysql_error();
-            }
-            else
-            {
-                $num=mysql_num_rows($result);
-                $i=0;
-                $rownum=0;
-                while ($i < $num) {
+			// DB-Connection
+			try {
+				$con = new PDO('mysql:host=' . $host . ';dbname=' . $dbname . ';charset=utf8', $benutzer, $passwort);
 
-                        $rownum++;
-                        if ($benutzer_id == mysql_result($result,$i,"keynr")) {
-                            echo "<option value=\"" . mysql_result($result,$i,"keynr") . "\" selected>" . mysql_result($result,$i,"login") . "</option>";
-                        } else {
-                            echo "<option value=\"" . mysql_result($result,$i,"keynr") . "\">" . mysql_result($result,$i,"login") . "</option>";
-                        }
-                        $i++;
+			} catch (PDOException $ex) {
+				die('Die Datenbank ist momentan nicht erreichbar!');
+			}
+            foreach ($con->query("SELECT keynr, login FROM benutzer order by login") as $row) {
+            
+                if ($benutzer_id == $row['keynr']) {
+                	echo "<option value=\"" . $row['keynr') . "\" selected>" . $row['login'] . "</option>";
+                } else {
+                    echo "<option value=\"" . $row['keynr'] . "\">" . $row['login'] . "</option>";
                 }
             }
+
 ?>
         </select>
 	</td>
@@ -126,23 +120,20 @@ and open the template in the editor.
 <?php
         if (isset($benutzer_id)) {
            // Menüeinträge laden $parent setzen und daten laden
-           mysql_connect($host,$benutzer,$passwort);
-           mysql_select_db($dbname);
-           $result2 = mysql_query("SELECT m.menu_id, m.name FROM menu m, benutzer_menu b WHERE m.menu_id=b.menu_id and b.benutzer_id=" . $benutzer_id . " and b.parent_id=" . $parent_id . " order by m.name");
-           if (!$result2)
-            {
-                //exit('MySQL Fehler: (' . mysql_errno() . ') ' . mysql_error());
-                $fehler = "MySQL Fehler: (" . mysql_errno() . ") " . mysql_error();
-            }
-            else
-            {
-                $num2=mysql_num_rows($result2);
-                $i=0;
-                while ($i < $num2) {
-                    echo "<option value=\"" . mysql_result($result2,$i,"m.menu_id") . "\">" . mysql_result($result2,$i,"m.name") . "</option>";
-                    $i++;
+			// DB-Connection
+			try {
+				$con = new PDO('mysql:host=' . $host . ';dbname=' . $dbname . ';charset=utf8', $benutzer, $passwort);
+
+			} catch (PDOException $ex) {
+				die('Die Datenbank ist momentan nicht erreichbar!');
+			}
+           $result2 = $con->prepare("SELECT m.menu_id, m.name FROM menu m, benutzer_menu b WHERE m.menu_id=b.menu_id and b.benutzer_id=" . $benutzer_id . " and b.parent_id=" . $parent_id . " order by m.name");
+           $result2->execute(array($benutzer_id, $parent_id))
+		    or die ('Fehler in der Abfrage. ' . htmlspecialchars($result->errorinfo()[2]));
+
+				while ($row = $result->fetch()) {
+                    echo "<option value=\"" . $row['menu_id'] . "\">" . $row['name'] . "</option>";
                 }
-            }
         }
 ?>
         </select>
@@ -158,36 +149,33 @@ and open the template in the editor.
 <?php
 
            // Klass_ids laden $parent setzen und daten laden
-           mysql_connect($host,$benutzer,$passwort);
-           mysql_select_db($dbname);
+			// DB-Connection
+			try {
+				$con = new PDO('mysql:host=' . $host . ';dbname=' . $dbname . ';charset=utf8', $benutzer, $passwort);
 
+			} catch (PDOException $ex) {
+				die('Die Datenbank ist momentan nicht erreichbar!');
+			}
            if ( isset($_POST['menus']) ) {
                $aktion = $_POST['menus'];
            } else {
                $aktion = "Nicht zugeordnet";
            }
            if ($aktion == "Alle") {
-               $result3 = mysql_query("SELECT menu_id, name FROM menu order by name");
+               $sql = "SELECT menu_id, name FROM menu order by name";
                $sbutton = "Nicht zugeordnete";
            } else {
-               $result3 = mysql_query("SELECT * FROM menu m LEFT JOIN benutzer_menu b ON b.menu_id = m.menu_id WHERE b.benutzer_id IS NULL");
+               $sql = "SELECT * FROM menu m LEFT JOIN benutzer_menu b ON b.menu_id = m.menu_id WHERE b.benutzer_id IS NULL";
                $sbutton = "Alle";
            }
-           if (!$result3)
-           {
-                //exit('MySQL Fehler: (' . mysql_errno() . ') ' . mysql_error());
-                $fehler = "MySQL Fehler: (" . mysql_errno() . ") " . mysql_error();
-           }
-           else
-           {
-                $num=mysql_num_rows($result3);
-                $i=0;
-                while ($i < $num) {
+				$result3 = $con->prepare($sql);
+				$result3->execute(array($var1, $var2))
+    				or die ('Fehler in der Abfrage. ' . htmlspecialchars($result->errorinfo()[2]));
 
-                    echo "<option value=\"" . mysql_result($result3,$i,"menu_id") . "\" selected>" . mysql_result($result3,$i,"name") . "</option>";
-                    $i++;
+				while ($row = $result3->fetch()) {
+
+                    echo "<option value=\"" . $row['menu_id'] . "\" selected>" . $row['name'] . "</option>";
                 }
-           }
 ?>
         </select>
 	</td>

@@ -56,18 +56,16 @@
                             $sql = "INSERT INTO std_hier_strukturen VALUES (" . $klassh_id . "," . $klass_id . "," . $parent_id . ",'" . $datum . "','" . $datum . "')";
                     }
 
-                    mysql_connect($host,$benutzer,$passwort);
-                    mysql_select_db($dbname);
-                    $result = mysql_query($sql);
-                    if (!$result)
-                    {
-                        //exit('MySQL Fehler: (' . mysql_errno() . ') ' . mysql_error());
-                        $fehler = "MySQL Fehler: (" . mysql_errno() . ") " . mysql_error();
-                    }
-                    else
-                    {
-                        $message = "Satz in File-Archiv wurde erfolgreich angelegt!";
-                    }
+				// DB-Connection
+				try {
+					$con = new PDO('mysql:host=' . $host . ';dbname=' . $dbname . ';charset=utf8', $benutzer, $passwort);
+
+				} catch (PDOException $ex) {
+					die('Die Datenbank ist momentan nicht erreichbar!');
+				}
+                    $result = $con->execute($sql);
+					    or die ('Fehler ...');
+                    $message = "Satz in File-Archiv wurde erfolgreich angelegt!";
         }
 ?>
 
@@ -85,8 +83,13 @@
 	<select name="klassh_id" >
 <?php
             // Hierarchiewerte laden bzw. Übergabewert selektieren
-            mysql_connect($host,$benutzer,$passwort);
-            mysql_select_db($dbname);
+			// DB-Connection
+			try {
+				$con = new PDO('mysql:host=' . $host . ';dbname=' . $dbname . ';charset=utf8', $benutzer, $passwort);
+
+			} catch (PDOException $ex) {
+				die('Die Datenbank ist momentan nicht erreichbar!');
+			}
             $result = mysql_query("SELECT klassh_id, bezeichnung FROM std_klass_hierarchien order by bezeichnung");
             if (!$result)
             {
@@ -95,18 +98,15 @@
             }
             else
             {
-                $num=mysql_num_rows($result);
-                $i=0;
                 $rownum=0;
-                while ($i < $num) {
+                while ($row = $result->fetch()) {
 
                         $rownum++;
-                        if ($klassh_id == mysql_result($result,$i,"klassh_id")) {
-                            echo "<option value=\"" . mysql_result($result,$i,"klassh_id") . "\" selected>" . mysql_result($result,$i,"bezeichnung") . "</option>";
+                        if ($klassh_id == $row['klassh_id']) {
+                            echo "<option value=\"" . $row['klassh_id'] . "\" selected>" . $row['bezeichnung'] . "</option>";
                         } else {
-                            echo "<option value=\"" . mysql_result($result,$i,"klassh_id") . "\">" . mysql_result($result,$i,"bezeichnung") . "</option>";
+                            echo "<option value=\"" . $row['klassh_id'] . "\">" . $row['bezeichnung'] . "</option>";
                         }
-                        $i++;
                 }
             }
 ?>
@@ -123,23 +123,19 @@
 <?php
         if (isset($klassh_id)) {
            // Klass_ids laden $parent setzen und daten laden
-           mysql_connect($host,$benutzer,$passwort);
-           mysql_select_db($dbname);
-           $result2 = mysql_query("SELECT h.klass_id, k.bezeichnung FROM std_klassifizierung k, std_klass_hier_strukturen h WHERE h.klass_id=k.klass_id and h.klassh_id=" . $klassh_id . " and parent_id=" . $parent_id . " order by k.bezeichnung");
-           if (!$result2)
-            {
-                //exit('MySQL Fehler: (' . mysql_errno() . ') ' . mysql_error());
-                $fehler = "MySQL Fehler: (" . mysql_errno() . ") " . mysql_error();
-            }
-            else
-            {
-                $num2=mysql_num_rows($result2);
-                $i=0;
-                while ($i < $num2) {
-                    echo "<option value=\"" . mysql_result($result2,$i,"h.klass_id") . "\">" . mysql_result($result2,$i,"k.bezeichnung") . "</option>";
-                    $i++;
+			// DB-Connection
+			try {
+				$con = new PDO('mysql:host=' . $host . ';dbname=' . $dbname . ';charset=utf8', $benutzer, $passwort);
+
+				} catch (PDOException $ex) {
+					die('Die Datenbank ist momentan nicht erreichbar!');
+			}
+           $result2 = $con->prepare("SELECT h.klass_id, k.bezeichnung FROM std_klassifizierung k, std_klass_hier_strukturen h WHERE h.klass_id=k.klass_id and h.klassh_id=" . $klassh_id . " and parent_id=" . $parent_id . " order by k.bezeichnung");
+			$result2->execute(array($klassh_id, $parent_id))
+			    or die ('Fehler in der Abfrage. ' . htmlspecialchars($result->errorinfo()[2]));
+                while ($row = $result2->fetch()) {
+                    echo "<option value=\"" . $row['klass_id'] . "\">" . $row['bezeichnung'] . "</option>";
                 }
-            }
         }
 ?>
         </select>
@@ -155,8 +151,13 @@
 <?php
 
            // Klass_ids laden $parent setzen und daten laden
-           mysql_connect($host,$benutzer,$passwort);
-           mysql_select_db($dbname);
+			// DB-Connection
+			try {
+				$con = new PDO('mysql:host=' . $host . ';dbname=' . $dbname . ';charset=utf8', $benutzer, $passwort);
+
+				} catch (PDOException $ex) {
+					die('Die Datenbank ist momentan nicht erreichbar!');
+			}
 
            if ( isset($_POST['alleids']) ) {
                $aktion = $_POST['alleids'];
@@ -164,27 +165,17 @@
                $aktion = "Nicht zugeordnet";
            }
            if ($aktion == "Alle") {
-               $result3 = mysql_query("SELECT klass_id, bezeichnung FROM std_klassifizierung order by bezeichnung");
+               $result3 = $con->query("SELECT klass_id, bezeichnung FROM std_klassifizierung order by bezeichnung");
                $sbutton = "Nicht zugeordnete";
            } else {
-               $result3 = mysql_query("SELECT * FROM std_klassifizierung k LEFT JOIN std_klass_hier_strukturen h ON k.klass_id = h.klass_id WHERE h.klassh_id IS NULL");
+               $result3 = $con->query("SELECT * FROM std_klassifizierung k LEFT JOIN std_klass_hier_strukturen h ON k.klass_id = h.klass_id WHERE h.klassh_id IS NULL");
                $sbutton = "Alle";
            }
-           if (!$result3)
-           {
-                //exit('MySQL Fehler: (' . mysql_errno() . ') ' . mysql_error());
-                $fehler = "MySQL Fehler: (" . mysql_errno() . ") " . mysql_error();
-           }
-           else
-           {
-                $num=mysql_num_rows($result3);
-                $i=0;
-                while ($i < $num) {
+            while ($row = $result3->fetch()) {
 
-                    echo "<option value=\"" . mysql_result($result3,$i,"klass_id") . "\" selected>" . mysql_result($result3,$i,"bezeichnung") . "</option>";
-                    $i++;
-                }
-           }
+                echo "<option value=\"" . $row['klass_id'] . "\" selected>" . $row['bezeichnung'] . "</option>";
+
+            }
 ?>
         </select>
 	</td>

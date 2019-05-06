@@ -28,28 +28,27 @@ and open the template in the editor.
         	$klass_id = $_POST['klass_id'];
         	$bezeichnung = $_POST['bezeichnung'];
 
-	// ***** Verbindugsaufbau zu MySQL *****
+	// DB-Connection
+    try {
+        $con = new PDO('mysql:host=' . $host . ';dbname=' . $dbname . ';charset=utf8', $benutzer, $passwort);
+    
+    } catch (PDOException $ex) {
+        die('Die Datenbank ist momentan nicht erreichbar!');
+    }
+     $datum = date("yyyy-mm-dd", $timestamp);
 
-		$con = mysql_connect($host, $benutzer, $passwort);
-		if (!$con) {
-			exit('Connect Error (' . mysql_connect_errno() . ') ' . mysql_connect_error());
-		}
-                $datum = date("yyyy-mm-dd", $timestamp);
-
-		mysql_select_db($dbname);
-		$result = mysql_query('INSERT INTO std_klassifizierung values (' . $klass_id . ',' . $bezeichnung . ',' . $datum . ',' . $datum . ')');
-		if (!$result) {
-			exit('Query Fehler (' . mysql_connect_errno() . ') ' . mysql_connect_error());
-		}
+		$result = $con->execute('INSERT INTO std_klassifizierung values (' . $klass_id . ',' . $bezeichnung . ',' . $datum . ',' . $datum . ')')
+        or die ('Fehler in der Abfrage. ' . htmlspecialchars($result->errorinfo()[2]))
 
 	} else // Form
         {
 
-                $con = mysql_connect($host, $benutzer, $passwort);
-		if (!$con) {
-			exit('Connect Error (' . mysql_connect_errno() . ') ' . mysql_connect_error());
-		}
-		mysql_select_db($dbname);
+    try {
+        $con = new PDO('mysql:host=' . $host . ';dbname=' . $dbname . ';charset=utf8', $benutzer, $passwort);
+    
+    } catch (PDOException $ex) {
+        die('Die Datenbank ist momentan nicht erreichbar!');
+    }
 
                 // max klass_id suchen
                 $timestamp = time();
@@ -57,11 +56,9 @@ and open the template in the editor.
                 echo "Datum: " . $datum;
                 if (!$klass_id)
                 {
-                    $result = mysql_query("select max(klass_id) from std_klassifizierung");
-                    $row = mysql_fetch_row($result);
-                    $klass_id = $row[0];
+                    $result = $con->execute("select max(klass_id) from std_klassifizierung");
+                    $klass_id = $result->fetchColumn();
                     $klass_id++;
-                    mysql_free_result($result);
 
                 } else
                 {
@@ -72,25 +69,19 @@ and open the template in the editor.
             <table><tr><td>Zuordnung</td><td>
       <?php
             // Hierarchie aus DB lesen
-            $con = mysql_connect($host, $benutzer, $passwort);
-            if (!$con) {
-                    exit('Connect Error (' . mysql_errno() . ') ' . mysql_error());
-            }
-            mysql_select_db($dbname);
-            $result = mysql_query('SELECT klassh_id, bezeichnung from std_klass_hierarchien;');
-            if (!$result) {
-                    exit('Query Fehler (' . mysql_errno() . ') ' . mysql_error());
-            } else
-            {
-                $num=mysql_numrows($result);
-                echo "<select name=\"klassh_id\">";
+		    try {
+        		$con = new PDO('mysql:host=' . $host . ';dbname=' . $dbname . ';charset=utf8', $benutzer, $passwort);
+    
+		    } catch (PDOException $ex) {
+        		die('Die Datenbank ist momentan nicht erreichbar!');
+    		}
+            $result = $con->query('SELECT klassh_id, bezeichnung from std_klass_hierarchien;');
+            echo "<select name=\"klassh_id\">";
 
-                $i=0;
-                while ($i < $num) {
+                while ($row = $result->fetch()) {
 
                         // Suchergebnis in Liste anzeigen
-                        echo "<option value=\"" . mysql_result($result,$i,"klassh_id") . "\">" . mysql_result($result,$i,"bezeichnung") . "</option>";
-                        $i++;
+                        echo "<option value=\"" . $row['klassh_id'] . "\">" . $row['bezeichnung'] . "</option>";
                 }
                 echo "</select>";
             }

@@ -1,5 +1,5 @@
 <?php
-//        session_start();
+        session_start();
 ?>
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
@@ -34,38 +34,29 @@
             // String sql = "";
             // int test;
             //global $max_vid;
-/*
+
             // ***** Parameter auslesen session *****
             $host = $_SESSION['host'];
             $benutzer = $_SESSION['benutzer'];
             $passwort = $_SESSION['passwort'];
             $dbname = $_SESSION['dbname'];
             $benutzer_id = $_SESSION['keynr'];
-*/
 
-//Test
-            $host = 'localhost';
-            $benutzer = 'root';
-            $passwort = '';
-            $dbname = 'test';
+			// DB-Connection
+			try {
+				$con = new PDO('mysql:host=' . $host . ';dbname=' . $dbname . ';charset=utf-8', $benutzer, $passwort);
 
-//            $con = mysqli_connect($host, $benutzer, $passwort);
-//            mysql_select_db($dbname);
-	        $con = new mysqli($host, $benutzer, $passwort, $dbname);
-
+			} catch (PDOException $ex) {
+				die('Die Datenbank ist momentan nicht erreichbar!');
+			}
             // Datenbank
             if ($anmerkung != null)
             {
 
-                    $result = mysqli_query($con, "INSERT INTO budget (budget_id,gueltigab,gueltigbis,ktonr,betrag,haeufigkeit,anmerkung) VALUES (" . $budget_id . "," . $gueltigab . "," . $gueltigbis . ","  . $konto . "," . $betrag . ",'" . $haeufigkeit . "','" . $anmerkung . "')");
-                    if (!$result) {
-                        exit('MySQL Fehler: (' . mysqli_errno($con) . ') ' . mysqli_error($con));
-                    }
-                    else
-                    {
-                    	echo "Satz gespeichert: " . $haeufigkeit . " " . $konto . " " . $betrag . " " . $anmerkung;
-                    }
-
+                    $result = $con->prepare("INSERT INTO budget VALUES (?,?,?,?,?,?,?)");
+					$result->execute(array($budget_id, $gueltigab, $gueltigbis, $konto, $betrag, $haeufigkeit, $anmerkung))
+    					or die ('Fehler in der Abfrage. ' . htmlspecialchars($result->errorinfo()[2]));
+                    echo "Satz gespeichert: " . $haeufigkeit . " " . $konto . " " . $betrag . " " . $anmerkung;
             }
         }
 ?>
@@ -80,22 +71,22 @@
 		<td><input name="budget_id" type="text" size="3" value="1" /></td>
 </tr>
 <tr>
-		<td>H&auml;ufigkeit</td>
+		<td>Häufigkeit</td>
 		<td>
 			<input name="haeufigkeit" type="radio" value="M">Monatlich
 			<input name="haeufigkeit" type="radio" value="Z">Zweimonatlich
 			<input name="haeufigkeit" type="radio" value="Q">Quartal
-			<input name="haeufigkeit" type="radio" value="H">Halbj&auml;hrlich
-			<input name="haeufigkeit" type="radio" value="J">J&auml;hrlich
+			<input name="haeufigkeit" type="radio" value="H">Halbjährlich
+			<input name="haeufigkeit" type="radio" value="J">Jährlich
 			<input name="haeufigkeit" type="radio" value="E">Einmalig
 		</td>
 </tr>
 <tr>
-		<td>G&uuml;ltig ab</td>
+		<td>Gültig ab</td>
 		<td><input name="gueltigab" type="text" size="6" /></td>
 </tr>
 <tr>
-		<td>G&uuml;ltig bis</td>
+		<td>Gültig bis</td>
 		<td><input name="gueltigbis" type="text" size="6" /></td>
 </tr>
 <tr>

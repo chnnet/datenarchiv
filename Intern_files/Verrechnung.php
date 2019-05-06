@@ -29,6 +29,7 @@
             $datum = $_POST['datum'];
             $betrag = ($betrag_dec / 100 ) + $betrag_int;
             $text = $_POST['text'];
+            $status = $_POST['status'];
             // String sql = "";
             // int test;
             global $max_vid;
@@ -40,53 +41,52 @@
             $dbname = $_SESSION['dbname'];
             $benutzer_id = $_SESSION['keynr'];
 
-            $con = mysql_connect($host, $benutzer, $passwort);
-            mysql_select_db($dbname);
-
+		    // DB-Connection
+    		try {
+        		$con = new PDO('mysql:host=' . $host . ';dbname=' . $dbname . ';charset=utf8', $benutzer, $passwort);
+    
+		    } catch (PDOException $ex) {
+        		die('Die Datenbank ist momentan nicht erreichbar!');
+    		}
             // Datenbank
             if ($text != null)
             {
 
-                    $result = mysql_query("select max(verrechnung_id) from verrechnung");
-                    $row = mysql_fetch_row($result);
-                    $max_vid = $row[0];
+                    $result = $con->query("select max(verrechnung_id) from verrechnung");
+                    $max_vid = $result->fetchColumn();
                     $max_vid++;
-                    mysql_free_result($result);
+                    //mysql_free_result($result);
 
-                    $result = mysql_query("INSERT INTO verrechnung VALUES (" . $benutzer_id . "," . $betrag . ",0," . $max_vid . ",'" . $datum . "','" . $text . "','N'," . $konto . ")");
-                    if (!$result) {
-                        exit('MySQL Fehler: (' . mysql_errno() . ') ' . mysql_error());
-                    }
+                    $result = $con->prepare("INSERT INTO verrechnung VALUES (?,?,?,?,?,?,?,?)");
+                    $result->execute(array($benutzer_id, $betrag,'0', $max_vid, $datum, $text, $status, $konto))
+						or die ('Fehler in der Abfrage. ' . htmlspecialchars($result->errorinfo()[2]));
 
             }
             // Saldo errechnen und ausgeben
-            $result = mysql_query("select max(verrechnung_id) from verrechnung where status = 'V'");
-            $row = mysql_fetch_row($result);
-            $max_vid = $row[0];
-            mysql_free_result($result);
+            $result = $con->query("select max(verrechnung_id) from verrechnung where status = 'V'");
+            $max_vid = $result->fetchColumn();
+            //mysql_free_result($result);
 
 
-            $result = mysql_query("SELECT b.login, round(sum( v.betrag ),2) FROM verrechnung v, benutzer b WHERE b.keynr=v.benutzer_id and v.benutzer_id in (2,3) AND v.verrechnung_id > " . $max_vid . " GROUP BY v.benutzer_id");
-            $num=mysql_num_rows($result);
-            $i=0;
+            $result = $con->query("SELECT b.login, round(sum( v.betrag ),2) as betrag FROM verrechnung v, benutzer b WHERE b.keynr=v.benutzer_id and v.benutzer_id in (2,3) AND v.verrechnung_id > " . $max_vid . " GROUP BY v.benutzer_id");
             $rownum=0;
             echo "<table>";
-            while ($i < $num) {
+	        $result =$con->query("SELECT b.login, round(sum( v.betrag ),2) as betrag FROM verrechnung v, benutzer b WHERE b.keynr=v.benutzer_id and v.benutzer_id in (2,3) and v.verrechnung_id > " . $max_vid . " GROUP BY v.benutzer_id");
+    	    echo "<table>";
+			$i=0;
+			$saldo=0;
+	    	while ($row = $result->fetch()) {
+	    
+				if ($i==0) $saldo = $saldo + $row['betrag'];
+				if ($i==1) $saldo = $saldo - $row['betrag'];
+		        //$saldo = round(mysql_result($result,1,1) - mysql_result($result,0,1), 2);
+    		    echo "<tr>";
+        		echo "<td>" . $row['login'] . "</td><td>" . $row['betrag'] . "</td>";
+	        	echo "</tr>";
+		        echo "</tr>";
+    	    	$i++;
+			}
 
-                    $rownum++;
-                    echo "<tr>";
-                    echo "<td>" . mysql_result($result,$i,0) . "</td><td>" . mysql_result($result,$i,1) . "</td>";
-                    echo "</tr>";
-                    if ($i % 2 == 0)
-					{
-						$saldo = $saldo + mysql_result($result,$i,1);
-                    }
-                    else
-                    {
-	                    $saldo = $saldo - mysql_result($result,$i,1);
-                    }
-                    $i++;
-            }
             echo "</table>";
             echo "Saldo: " . $saldo;
         }

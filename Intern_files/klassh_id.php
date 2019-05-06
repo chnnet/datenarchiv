@@ -30,25 +30,23 @@ and open the template in the editor.
 
 	// ***** Verbindugsaufbau zu MySQL *****
 
-		$con = mysql_connect($host, $benutzer, $passwort);
-		if (!$con) {
-			exit('Connect Error (' . mysql_connect_errno() . ') ' . mysql_connect_error());
-		}
-                $datum = date("yyyy-mm-dd", $timestamp);
+    $con = new PDO('mysql:host=' . $host . ';dbname=' . $dbname . ';charset=utf8', $benutzer, $passwort);
+    
+    } catch (PDOException $ex) {
+        die('Die Datenbank ist momentan nicht erreichbar!');
+    }
+    $datum = date("yyyy-mm-dd", $timestamp);
 
-		mysql_select_db($dbname);
-		$result = mysql_query('INSERT INTO std_klass_hierarchien values (' . $klassh_id . ',' . $bezeichnung . ',' . $datum . ',' . $datum . ')');
-		if (!$result) {
-			exit('Query Fehler (' . mysql_connect_errno() . ') ' . mysql_connect_error());
-		}
+		$result = $con->execute('INSERT INTO std_klass_hierarchien values (' . $klassh_id . ',' . $bezeichnung . ',' . $datum . ',' . $datum . ')')
+        	or die ('Fehler in der Abfrage. ' . htmlspecialchars($result->errorinfo()[2]));
 
 	} else // Form
         {
-		$con = mysql_connect($host, $benutzer, $passwort);
-		if (!$con) {
-			exit('Connect Error (' . mysql_connect_errno() . ') ' . mysql_connect_error());
-		}
-		mysql_select_db($dbname);
+		    $con = new PDO('mysql:host=' . $host . ';dbname=' . $dbname . ';charset=utf8', $benutzer, $passwort);
+    
+    		} catch (PDOException $ex) {
+        		die('Die Datenbank ist momentan nicht erreichbar!');
+    		}
 
                 // max klass_id suchen
                 $timestamp = time();
@@ -56,11 +54,9 @@ and open the template in the editor.
                 echo "Datum: " . $datum;
                 if (!$klassh_id)
                 {
-                    $result = mysql_query("select max(klassh_id) from std_klassifizierung");
-                    $row = mysql_fetch_row($result);
-                    $klassh_id = $row[0];
+                    $result = $con->query("select max(klassh_id) from std_klassifizierung");
+                    $klassh_id = $result->fetchColumn();
                     $klassh_id++;
-                    mysql_free_result($result);
 
                 } else
                 {

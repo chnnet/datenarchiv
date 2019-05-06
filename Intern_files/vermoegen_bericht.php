@@ -19,25 +19,26 @@
             $benutzer_id = $_SESSION['keynr'];
 
 
-            $con = mysql_connect($host, $benutzer, $passwort);
-            mysql_select_db($dbname);
-            
-            $result = mysql_query("SELECT * FROM vermoegen order by jahrmonat desc");
-            $num=mysql_num_rows($result);
-            $i=0;
+		    // DB-Connection
+    		try {
+        		$con = new PDO('mysql:host=' . $host . ';dbname=' . $dbname . ';charset=utf8', $benutzer, $passwort);
+    
+		    } catch (PDOException $ex) {
+        		die('Die Datenbank ist momentan nicht erreichbar!');
+    		}            
+            $result = $con->query("SELECT * FROM vermoegen order by jahrmonat desc");
             $rownum=0;
 			echo "<h1>Verm&ouml;gensbericht</h1>";
             echo "<table border=\"1\">";
             echo "<tr>";
             echo "<th>Monat</th><th>Bargeld</th><th>Bank</th><th>Kreditkarte</th><th>Wertpapiere</th><th>Sparkonto</th><th>Anita</th>";
             echo "</tr>";
-            while ($i < $num) {
+            while ($row = $result->fetch()) {
 
                     $rownum++;
                     echo "<tr>";
-                    echo "<td>" . mysql_result($result,$i,0) . "</td><td align=\"right\">" . mysql_result($result,$i,1) . "</td><td align=\"right\">" . mysql_result($result,$i,2) . "</td><td align=\"right\">" . mysql_result($result,$i,3) . "</td><td align=\"right\">" . mysql_result($result,$i,4) . "</td><td align=\"right\">" . mysql_result($result,$i,5) . "</td>" . "</td><td align=\"right\">" . mysql_result($result,$i,6) . "</td>";
+                    echo "<td>" . $row[0] . "</td><td align=\"right\">" .$row[1] . "</td><td align=\"right\">" . $row[2] . "</td><td align=\"right\">" . $row[3] . "</td><td align=\"right\">" . $row[4] . "</td><td align=\"right\">" . $row[5] . "</td>" . "</td><td align=\"right\">" . $row[6] . "</td>";
                     echo "</tr>";
-                    $i++;
             }
             echo "</table>";
 ?>

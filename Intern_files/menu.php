@@ -44,35 +44,40 @@ else
 	$parent_id = 0;
 }
 
-// ***** Verbindugsaufbau zu MySQL *****
-// Menüdaten für benutzer auselsen und Menü aufbauen
-mysql_connect($host, $benutzer, $passwort);
-mysql_select_db($dbname);
-$result = mysql_query("SELECT m.name,m.pfad_file,m.target,m.pfad_icon FROM menu m, benutzer_menu b WHERE m.menu_id=b.menu_id and b.benutzer_id = $keynr and b.parent_id =  $parent_id order by b.menu_order");
-$num=mysql_num_rows($result);
+// DB-Connection
+try {
+	$con = new PDO('mysql:host=' . $host . ';dbname=' . $dbname . ';charset=utf8', $benutzer, $passwort);
 
-$i=0;
-while ($i < $num) {
+} catch (PDOException $ex) {
+	die('Die Datenbank ist momentan nicht erreichbar!');
+}
 
-		$icon = mysql_result($result,$i,"m.pfad_icon");
-		$name = mysql_result($result,$i,"m.name");
-		$pfadf = mysql_result($result,$i,"m.pfad_file");
-		$target = mysql_result($result,$i,"m.target");
+//Query
+$result = $con->prepare("SELECT m.name,m.pfad_file,m.target,m.pfad_icon FROM menu m, benutzer_menu b WHERE m.menu_id=b.menu_id and b.benutzer_id = $keynr and b.parent_id =  $parent_id order by b.menu_order");
+$result->execute(array($keynr, $parent_id));
+
+while ($row = $result->fetch()) {
+
+		$icon = $row['pfad_icon'];
+		$name = $row['name'];
+		$pfadf = $row['pfad_file'];
+		$target = $row['target'];
                 // icon-pfad prüfen, ob vorhanden
 		if ( $icon == "" )
 		{
-//					echo "<td><a href=\"http://" . $host . "/chnnet.at//Intern_files/" . $pfadf . "\" target=\"" . $target . "\">" . $name . "</a></td>";
-					echo "<td><a href=\"http://www.chnnet.at/chnnet.at//Intern_files/" . $pfadf . "\" target=\"" . $target . "\">" . $name . "</a></td>";
+		
+					echo "<td><a href=\"http://192.168.64.2/datenarchiv/" . $pfadf . "\" target=\"" . $target . "\">" . $name . "</a></td>";
+//					echo "<td><a href=\"http://www.chnnet.at/chnnet.at//Intern_files/" . $pfadf . "\" target=\"" . $target . "\">" . $name . "</a></td>";
 		}
 		else
 		{
-//					echo "<td><a href=\"http://" . $host . "/chnnet.at//Intern_files/" . $pfadf . "\" target=\"" . $target . "\"> <img src=\"" . $icon . "\" border=\"0\" alt=\"" . $name . "\"></a></td>";
-					echo "<td><a href=\"http://www.chnnet.at/chnnet.at//Intern_files/" . $pfadf . "\" target=\"" . $target . "\"> <img src=\"http://www.chnnet.at/chnnet.at//Intern_files" . $icon . "\" border=\"0\" alt=\"" . $name . "\"></a></td>";
+					echo "<td><a href=\"http://192.168.64.2/datenarchiv/" . $pfadf . "\" target=\"" . $target . "\"> <img src=\"" . $icon . "\" border=\"0\" alt=\"" . $name . "\"></a></td>";
+//					echo "<td><a href=\"http://www.chnnet.at/chnnet.at//Intern_files/" . $pfadf . "\" target=\"" . $target . "\"> <img src=\"http://www.chnnet.at/chnnet.at//Intern_files" . $icon . "\" border=\"0\" alt=\"" . $name . "\"></a></td>";
 		}
-	$i++;
 }
 
-echo "<td><a href=\"http://www.chnnet.at/chnnet.at//Intern_files/logout.php\" target=\"_parent\"><img src=\"/chnnet.at//Intern_files/icons/logout.jpg\" border=\"0\" alt=\"Logout\"></a></td>";
+//echo "<td><a href=\"http://www.chnnet.at/chnnet.at//Intern_files/logout.php\" target=\"_parent\"><img src=\"/chnnet.at//Intern_files/icons/logout.jpg\" border=\"0\" alt=\"Logout\"></a></td>";
+echo "<td><a href=\"http://192.168.64.2/datenarchiv/logout.php\" target=\"_parent\"><img src=\"/chnnet.at//Intern_files/icons/logout.jpg\" border=\"0\" alt=\"Logout\"></a></td>";
 echo "</tr>";
 echo "</table>";
 echo "</body></html>";

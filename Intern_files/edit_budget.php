@@ -13,7 +13,10 @@
 
     </head>
     <body>
-        <?php
+		<h2>Budgetposten editieren</h2>
+		<br>
+
+    <?php
         // put your code here
 
         if (isset($_POST['lfdnr'])) // speichern
@@ -21,7 +24,7 @@
 
             // ***** Parameter auslesen - Seite *****
 
-            $lfdnr = $_POST['lfdnr'];
+            $anmerkung = $_POST['lfdnr'];
             $anmerkung = $_POST['anmerkung'];
             $budget_id = $_POST['budget_id'];
             $konto = $_POST['konto'];
@@ -54,70 +57,10 @@
 //            mysql_select_db($dbname);
 	        $con = new mysqli($host, $benutzer, $passwort, $dbname);
 
-			// ToDo Link zu lfdnr hinzufügen
-
-            $sql = ("select * from budget where gueltigbis >= YEAR(curdate())*100 + MONTH(curdate()) and lfdnr = '" . $lfdnr . "' order by ktonr, haeufigkeit");            
-            $result = $con->query($sql);
-            if (!$result) {
-                exit('MySQL Fehler: (' . mysqli_errno() . ') ' . mysqli_error());
-            }  else   {
-
-// edit
-echo '<h2>Budgetposten Details</h2>';
-echo '<br>';
-
-echo '<form name="budget_bericht" action="budgetsaetze_bericht.php" target="main" method="post">';
-echo '<table>';
-echo '<tr>';
-		echo '<td>H&auml;ufigkeit</td>';
-		echo '<td>';
-			echo '<input name="haeufigkeit" type="radio" value="A" checked="checked" >Alle';
-			echo '<input name="haeufigkeit" type="radio" value="M">Monatlich';
-			echo '<input name="haeufigkeit" type="radio" value="Z">Zweimonatlich';
-			echo '<input name="haeufigkeit" type="radio" value="Q">Quartal';
-			echo '<input name="haeufigkeit" type="radio" value="H">Halbj&auml;hrlich';
-			echo '<input name="haeufigkeit" type="radio" value="J">J&auml;hrlich';
-			echo '<input name="haeufigkeit" type="radio" value="E">Einmalig';
-		echo '</td>';
-echo '</tr>';
-echo '<tr>';
-		echo '<td>G&uuml;ltig</td>';
-		echo '<td>';
-			echo '<input name="gueltig" type="radio" value="0" checked="checked" >aktiv';
-			echo '<input name="gueltig" type="radio" value="1">Alle';
-		echo '</td>';
-echo '</tr>';
-echo '</table>';
-
-
-echo '<table>';
-echo '<input type=submit value="Neu filtern"/>';
-echo '</table>';
-
-echo '<table border=1>';
-
-// ToDo auf Update ändern
-
-            // Datenbank
-            if ($lfdnr != null)
-            {
-
-					$sql = "UPDATE budget  set budget_id=" . $budget_id . ", gueltigab=" . $gueltigab . ", gueltigbis=" . $gueltigbis  . ", ktonr=" . $konto  . ",betrag=" . $betrag  . ",haeufigkeit=" . $haeufigkeit  . ",anmerkung=" . $anmerkung . ")";
-                    $result = mysqli_query($con, $sql);
-                    if (!$result) {
-                        exit('MySQL Fehler: (' . mysqli_errno($con) . ') ' . mysqli_error($con));
-                    }
-                    else
-                    {
-                    	echo "Satz ge&auml;ndert: " . $lfdnr . " " . $haeufigkeit . " " . $konto . " " . $betrag . " " . $anmerkung;
-                    }
 
 
 
-		} else {
-
-            $sql = ("select * from budget where gueltigbis >= YEAR(curdate())*100 + MONTH(curdate()) order by ktonr, haeufigkeit");            
-				
+ // ToDo Link zu lfdnr hinzufügen
  				$summe = 0;
                 $result = $con->query($sql);
                 if (!$result) {
@@ -139,6 +82,7 @@ echo '<table border=1>';
     				    // output data of each row
 	   			    	while($row = $result->fetch_assoc()) {
 			    			echo '<tr>';
+			    			// Typ!
 			    			if ($row['ktonr'] < 20000)
 			    			{
 								$summe = $summe + $row['betrag'];		
@@ -149,8 +93,16 @@ echo '<table border=1>';
 	   			    		foreach ($row as $val) {
 
     			    			while ($zaehler < $feldanzahl) {
-	    			    			echo '<td>' . $row[$felder[$zaehler]] . '</td>';
-	    			    			$zaehler++;
+									if ($zaehler = 0) // key
+									{
+		    			    			echo '<a href=\"edit_budget.php?lfdnr=' . $row[$felder[$zaehler]] . '\">' . $row[$felder[$zaehler]] . '</a>';
+		    			    			$zaehler++;
+									} else {
+
+		    			    			echo '<td>' . $row[$felder[$zaehler]] . '</td>';
+		    			    			$zaehler++;
+									
+									}
     			    			}
     			    		}
 			    			echo '</tr>';
@@ -161,8 +113,72 @@ echo '<table border=1>';
    		    			echo "0 results";
 			    	}
                 }
-		} // Ende Liste
- 
+
+
+// ToDo auf Update ändern
+
+            // Datenbank
+            if ($lfdnr != null)
+            {
+
+				echo '<form name="budget_editieren" action="edit_budget.php" target="main" method="post">';
+				echo '<table>';
+				echo '<tr>';
+					echo '<td>Budget-ID</td>';
+					echo '<td><input name="budget_id" type="text" size="3" value="1" /></td>';
+				echo '</tr>';
+				echo '<tr>';
+					echo '<td>H&auml;ufigkeit</td>';
+				echo '<td>';
+					echo '<input name="haeufigkeit" type="radio" value="M">Monatlich';
+					echo '<input name="haeufigkeit" type="radio" value="Z">Zweimonatlich';
+					echo '<input name="haeufigkeit" type="radio" value="Q">Quartal';
+					echo '<input name="haeufigkeit" type="radio" value="H">Halbj&auml;hrlich';
+					echo '<input name="haeufigkeit" type="radio" value="J">J&auml;hrlich';
+					echo '<input name="haeufigkeit" type="radio" value="E">Einmalig';
+				echo '</td>';
+				echo '</tr>';
+				echo '<tr>';
+					echo '<td>G&uuml;ltig ab</td>';
+					echo '<td><input name="gueltigab" type="text" size="6" /></td>';
+				echo '</tr>';
+				echo '<tr>';
+					echo '<td>G&uuml;ltig bis</td>';
+					echo '<td><input name="gueltigbis" type="text" size="6" /></td>';
+				echo '</tr>';
+				echo '<tr>';
+					echo '<td>Konto</td>';
+					echo '<td>';
+						echo '<select name="konto">';
+
+							$optionen = jsklassids ("kontenstamm","ktonr","bezeichnung");
+							echo $optionen;			
+						echo '</select>';
+					echo '</td>';
+				echo '</tr>';
+				echo '<tr>';
+					echo '<td>Betrag</td>';
+					echo '<td><input name="betrag_int" type="text" size="7" />,<input name="betrag_dec" type="text" size="2" /></td>';
+				echo '</tr>';
+				echo '<tr>';
+					echo '<td>Anmerkung</td>';
+					echo '<td><input name="anmerkung" type="text" size=30 maxlength=50></td>';
+				echo '</tr>';
+			echo '</table>';
+				echo '<input type="hidden" name="lfdnr"/>';
+				echo '<input type=submit value="Posten Speichern"/>';
+			echo '</form>';
+
+
+                    $result = mysqli_query($con, "INSERT INTO budget (budget_id,gueltigab,gueltigbis,ktonr,betrag,haeufigkeit,anmerkung) VALUES (" . $budget_id . "," . $gueltigab . "," . $gueltigbis . ","  . $konto . "," . $betrag . ",'" . $haeufigkeit . "','" . $anmerkung . "')");
+                    if (!$result) {
+                        exit('MySQL Fehler: (' . mysqli_errno($con) . ') ' . mysqli_error($con));
+                    }
+                    else
+                    {
+                    	echo "Satz gespeichert: " . $haeufigkeit . " " . $konto . " " . $betrag . " " . $anmerkung;
+                    }
+
             }
         }
 // ToDo abhängig von lfdnr Liste oder edit-Form

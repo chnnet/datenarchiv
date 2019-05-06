@@ -62,9 +62,14 @@
                     $sql = "INSERT INTO file_archiv (titel,klass_id,Schlagwort1,Schlagwort2,Schlagwort3,filename,fileformat,fileextension,cdname,datum,quelle) VALUES ('" . titel . "'," . klass_id . ",'" . schlagw1 . "','" . schlagw2 . "','" . schlagw3 . "','" . filename . "','" . fileformat . "','" . fileextension . "','" . cdname . "','" . datum . "','" . quelle . "')";
             }
 
-            mysql_connect($host,$benutzer,$passwort);
-            mysql_select_db($dbname);
-            $result = mysql_query($sql);
+			// DB-Connection
+			try {
+				$con = new PDO('mysql:host=' . $host . ';dbname=' . $dbname . ';charset=utf8', $benutzer, $passwort);
+
+			} catch (PDOException $ex) {
+				die('Die Datenbank ist momentan nicht erreichbar!');
+			}
+            $result = $con->query($sql);
             if (!$result)
             {
                 //exit('MySQL Fehler: (' . mysql_errno() . ') ' . mysql_error());
@@ -88,49 +93,33 @@
         // ***** Verbindugsaufbau zu MySQL *****
         // ***** Daten für JS arrays auslesen *****
 
-        $con = mysql_connect($host,$benutzer,$passwort);
-        mysql_select_db($dbname);
-        $result = mysql_query("select s.klass_id,k.bezeichnung from std_klass_hier_strukturen s, std_klassifizierung k where k.klass_id=s.klass_id AND s.klassh_id=1 AND s.parent_id=0 group by k.bezeichnung");
-        $num=mysql_num_rows($result);
-        if (!$result)
-        {
-            //exit('MySQL Fehler: (' . mysql_errno() . ') ' . mysql_error());
-            $fehler = "MySQL Fehler: (" . mysql_errno() . ") " . mysql_error();
-        }
-        else
-        {
-            // $fehler = "Query: " . $num;
-            $i=0;
-            $rownum=0;
-            while ($i < $num) {
+	// DB-Connection
+	try {
+		$con = new PDO('mysql:host=' . $host . ';dbname=' . $dbname . ';charset=utf8', $benutzer, $passwort);
 
+	} catch (PDOException $ex) {
+		die('Die Datenbank ist momentan nicht erreichbar!');
+	}
+    $rownum=0;
+	foreach ($con->query("select s.klass_id,k.bezeichnung from std_klass_hier_strukturen s, std_klassifizierung k where k.klass_id=s.klass_id AND s.klassh_id=1 AND s.parent_id=0 group by k.bezeichnung") as $row {
+	
                     $rownum++;
-                    echo "groups[" . $rownum . "] = \"" . mysql_result($result,$i,"k.bezeichnung") . "\";";
-                    echo "group_id[" . $rownum . "] = \"" . mysql_result($result,$i,"s.klass_id") . "\";";
+                    echo "groups[" . $rownum . "] = \"" . $row['bezeichnung'] . "\";";
+                    echo "group_id[" . $rownum . "] = \"" . $row['klass_id'] . "\";";
                     echo "klass_id[" . $rownum . "] = new Array();";
                     echo "klass_bez[" . $rownum . "] = new Array();";
 
-                    $result2 = mysql_query("select s.klass_id,k.bezeichnung from std_klass_hier_strukturen s, std_klassifizierung k where k.klass_id=s.klass_id AND parent_id=" . mysql_result($result,$i,"s.klass_id") . " group by k.bezeichnung");
-                    if (!$result2)
+					// Check ob Abfrage mit Var als Query funktioniert
+                    $result2 = $con->query("select s.klass_id,k.bezeichnung from std_klass_hier_strukturen s, std_klassifizierung k where k.klass_id=s.klass_id AND parent_id=" . $row['klass_id'] . " group by k.bezeichnung");
+                    $cnt = 0;
+                    while ( $row = $result->fetch() )
                     {
-                        $fehler = "MySQL Fehler: (" . mysql_errno() . ") " . mysql_error();
+                        //$fehler .= " Subquery: " . $row['bezeichnung'];
+                        echo "klass_id[" . $rownum . "][" . $cnt . "] = \"" . $row['klass_id'] . "\";";
+                        echo "klass_bez[" . $rownum . "][" . $cnt . "] = \"" . $row['bezeichnung'] . "\";";
+                        $cnt++;
                     }
-                    else
-                    {
-                        $num2 = mysql_num_rows($result2);
-                        $cnt = 0;
-                        while ( $cnt < $num2 )
-                        {
-                            //$fehler .= " Subquery: " . mysql_result($result2,$cnt,"k.bezeichnung");
-                            echo "klass_id[" . $rownum . "][" . $cnt . "] = \"" . mysql_result($result2,$cnt,"s.klass_id") . "\";";
-                            echo "klass_bez[" . $rownum . "][" . $cnt . "] = \"" . mysql_result($result2,$cnt,"k.bezeichnung") . "\";";
-                            $cnt++;
-                        }
-                    }
-            $i++;
-            }
-
-        }
+	};
 ?>
 </script>
 

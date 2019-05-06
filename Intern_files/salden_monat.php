@@ -17,23 +17,22 @@
 	$benutzer = $_SESSION['benutzer'];
 	$passwort = $_SESSION['passwort'];
 	$dbname = $_SESSION['dbname'];
-        $con = mysql_connect($host, $benutzer, $passwort);
-        if (!$con) {
-                exit('Connect Error (' . mysql_errno() . ') ' . mysql_error());
-        }
 
+    // DB-Connection
+    try {
+        $con = new PDO('mysql:host=' . $host . ';dbname=' . $dbname . ';charset=utf8', $benutzer, $passwort);
+    
+    } catch (PDOException $ex) {
+        die('Die Datenbank ist momentan nicht erreichbar!');
+    }
         global $summe;
-        mysql_select_db($dbname);
-        $result = mysql_query("SELECT k.bezeichnung, s.betrag from kontenstamm k, salden_monat_verrechnung s where k.ktonr=s.konto_id and s.konto_id > 39999 and s.konto_id < 80000 and jahrmonat=" . $_POST['monat']);
+        $result = $con->query("SELECT k.bezeichnung, s.betrag from kontenstamm k, salden_monat_verrechnung s where k.ktonr=s.konto_id and s.konto_id > 39999 and s.konto_id < 80000 and jahrmonat=" . $_POST['monat']);
         if ($result)
         {
-            $num=mysql_numrows($result);
+            while ($row = $result->fetch()) {
 
-            $i=0;
-            while ($i < $num) {
-
-                $betrag = mysql_result($result,$i,"s.betrag");
-                echo "<tr><td>" . mysql_result($result,$i,"k.bezeichnung") . "</td><td align=right>" . $betrag . "</td></tr>";
+                $betrag = $row['betrag'];
+                echo "<tr><td>" . $row['bezeichnung'] . "</td><td align=right>" . $betrag . "</td></tr>";
                 $summe = $summe + $betrag;
                 $i++;
             }
@@ -41,7 +40,7 @@
         }
         else
         {
-            echo "SQL-Fehler: (" . mysql_errno() . ") " . mysql_error();
+            echo 'Fehler in der Abfrage. ' . htmlspecialchars($result->errorinfo()[2]);
         }
 
 ?>

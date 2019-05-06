@@ -32,12 +32,13 @@
 <br>
 
 <?php
-	$con = mysql_connect($host, $benutzer, $passwort);
-	if (!$con) {
-		exit('Connect Error (' . mysql_errno() . ') ' . mysql_error());
-	}
-
-	mysql_select_db($dbname);
+    // DB-Connection
+    try {
+        $con = new PDO('mysql:host=' . $host . ';dbname=' . $dbname . ';charset=utf8', $benutzer, $passwort);
+    
+    } catch (PDOException $ex) {
+        die('Die Datenbank ist momentan nicht erreichbar!');
+    }
 
 	if (isset($_POST['transaktions_id']))
 	{
@@ -149,20 +150,14 @@
                     if (isset($sql1))
                     {
                         echo "sql1: " . $sql1;
-                        mysql_select_db($dbname);
-                        $res=mysql_query($sql1);
-                        if (!$res) {
-                                echo "Fehler sql1: (" . mysql_errno() . ") " . mysql_error();
-                        }
+                        $res=$con->execute($sql1)
+        					or die ('Fehler in der Abfrage. ' . htmlspecialchars($res->errorinfo()[2]));
                     }
                     if (isset($sql2))
                     {
                         echo "sql2: " . $sql2;
-                        mysql_select_db($dbname);
-                        $res=mysql_query($sql2);
-                        if (!$res) {
-                                echo "Fehler sql2: (" . mysql_errno() . ") " . mysql_error();
-                        }
+                        $res=mysql_query($sql2)
+        					or die ('Fehler in der Abfrage. ' . htmlspecialchars($res->errorinfo()[2]));
                     }
 		}
 	}
@@ -175,14 +170,9 @@
                 $jahr = date("Y");
                 $jahr = $jahr * 10000;
 //echo "Jahr: " . $jahr;
-		$result = mysql_query('SELECT max(transaktions_id) from kontobewegungen where transaktions_id >' . $jahr);
-		if (!$result) {
-			exit('Query Fehler (' . mysql_errno() . ') ' . mysql_error());
-                        $transaktions_id = $jahr;
-		}
-		else
-		{
-			$transaktions_id = mysql_result($result,0,0);
+		$result = $con->query('SELECT max(transaktions_id) from kontobewegungen where transaktions_id >' . $jahr)
+        	or die ('Fehler in der Abfrage. ' . htmlspecialchars($res->errorinfo()[2]));
+			$transaktions_id = $result->fetchColumn();
          if ($transaktions_id != NULL)
          {
             $transaktions_id++;
@@ -259,18 +249,13 @@ echo "tsaldo: " . $tsaldo;
         echo "From Status: " . $form_status;
 	if ($form_status == 5)
 	{
-            $result = mysql_query("select k.bezeichnung,b.betrag,b.text from kontobewegungen b, kontenstamm k where b.konto=k.ktonr and b.transaktions_id = " . $transaktions_id);
-            if ($result)
-            {
-		$num=mysql_numrows($result);
-
-		$i=0;
-		while ($i < $num) {
+        $result = $con->query("select k.bezeichnung,b.betrag,b.text from kontobewegungen b, kontenstamm k where b.konto=k.ktonr and b.transaktions_id = " . $transaktions_id);
+        	or die ('Fehler in der Abfrage. ' . htmlspecialchars($result->errorinfo()[2]));
+		while ($row = $result->fetch()) {
 
 			echo "<tr>";
-			echo "<td>" . mysql_result($result,$i,"k.bezeichnung") . "</td><td align=right>" . mysql_result($result,$i,"b.betrag") . "</td><td>" . mysql_result($result,$i,"b.text") . "</td>";
+			echo "<td>" . $row['bezeichnung'] . "</td><td align=right>" . $row['betrag'] . "</td><td>" . $row['text'] . "</td>";
 			echo "</tr>";
-			$i++;
 		}
 		echo "<tr>";
 		echo "<td align=right>Saldo</td><td align=right>" . $tsaldo . "</td>";
@@ -278,7 +263,7 @@ echo "tsaldo: " . $tsaldo;
             }
             else
             {
-                echo "Fehler Seltrans: (" . mysql_errno() . ") " . mysql_error();
+                echo 'Fehler in der Abfrage. ' . htmlspecialchars($result->errorinfo()[2]));
             }
 	}		
 ?>
@@ -286,15 +271,11 @@ echo "tsaldo: " . $tsaldo;
 <td>
 <select name="konto">
 <?php
-		$result = mysql_query("select ktonr, bezeichnung from kontenstamm where ktonr > 39999 and ktonr < 80000");
+		$result = $con->query("select ktonr, bezeichnung from kontenstamm where ktonr > 39999 and ktonr < 80000");
                 if ($result)
                 {
-                    $num=mysql_numrows($result);
-
-                    $i=0;
-                    while ($i < $num) {
-                            echo "<option value = \"" . mysql_result($result,$i,"ktonr") . "\" >" . mysql_result($result,$i,"bezeichnung") . "</option>";
-                            $i++;
+                    while ($row = $result->fetch()) {
+                            echo "<option value = \"" . $row['ktonr'] . "\" >" . $row['bezeichnung'] . "</option>";
                     }
                 }
 ?>

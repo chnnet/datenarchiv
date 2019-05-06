@@ -10,6 +10,17 @@
     <body>
         <?php
         // put your code here
+		function setAmount($zahl_int, $zahl_dec) {
+		
+            if ($zahl_int < 0)
+            {
+            	$zahl_ges = $zahl_int - ($zahl_dec / 100 );
+            } else {
+            	$zahl_ges = ($zahl_dec / 100 ) + $zahl_int;
+            }
+            $zahl_ges = number_format ($zahl_ges, 2, '.', '');
+            return $zahl_ges;
+		}
 
         if (isset($_POST['jahrmonat'])) // speichern
         {
@@ -44,12 +55,21 @@
             $wp_betrag_int = $_POST['wp_betrag_int'];
             $av_betrag_dec = $_POST['av_betrag_dec'];
             $av_betrag_int = $_POST['av_betrag_int'];
+<<<<<<< HEAD
             $bar_betrag = erzeugeDezimal($bar_betrag_dec, $bar_betrag_int);
             $bank_betrag = erzeugeDezimal($bank_betrag_dec, $bank_betrag_int);
             $kk_betrag = erzeugeDezimal($kk_betrag_dec, $kk_betrag_int);
             $spar_betrag = erzeugeDezimal($spar_betrag_dec, $spar_betrag_int);
 			$wp_betrag = erzeugeDezimal($wp_betrag_dec, $wp_betrag_int);
 			$av_betrag = erzeugeDezimal($av_betrag_dec, $av_betrag_int);
+=======
+            $bar_betrag = ($bar_betrag_dec / 100 ) + $bar_betrag_int;
+            $bank_betrag = setAmount($bank_betrag_int, $bank_betrag_dec);
+            $kk_betrag = setAmount($kk_betrag_int, $kk_betrag_dec);
+            $spar_betrag = setAmount($spar_betrag_int, $spar_betrag_dec);
+			$wp_betrag = setAmount($wp_betrag_int, $wp_betrag_dec);
+			$av_betrag = setAmount($av_betrag_int, $av_betrag_dec);
+>>>>>>> 5f3aafe7067c51e3043e52512865ddb6b378a64c
 
             // ***** Parameter auslesen session *****
             $host = $_SESSION['host'];

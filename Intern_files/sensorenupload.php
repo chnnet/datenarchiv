@@ -17,17 +17,21 @@
 <?php
 
 	// Umschreiben auf SELECT mit $result
-	$con = mysql_connect($host, $benutzer, $passwort);
-	mysql_select_db($dbname);
-	$result = mysql_query('SELECT * from standort');
-	$num=mysql_numrows($result);
-	$i = 0;
-	while ( $i < $num )
+    // DB-Connection
+    try {
+        $con = new PDO('mysql:host=' . $host . ';dbname=' . $dbname . ';charset=utf8', $benutzer, $passwort);
+    
+    } catch (PDOException $ex) {
+        die('Die Datenbank ist momentan nicht erreichbar!');
+    }
+	$result = $con->query('SELECT * from standort');
+	i=0;
+	while ( $row = $result->fetch() )
 	{
 		if ($i == 0) {
-			echo "<tr><td><input type=\"radio\" name=\"standort\" value=\"" .  mysql_result($result,$i,"standort_id") . "\" checked>" .  mysql_result($result,$i,"bezeichnung") . "</td></tr>";
+			echo "<tr><td><input type=\"radio\" name=\"standort\" value=\"" .  $row['standort_id'] . "\" checked>" .  $row['bezeichnung'] . "</td></tr>";
 		} else {
-			echo "<tr><td><input type=\"radio\" name=\"standort\" value=\"" .  mysql_result($result,$i,"standort_id") . "\">" .  mysql_result($result,$i,"bezeichnung") . "</td></tr>";
+			echo "<tr><td><input type=\"radio\" name=\"standort\" value=\"" .  $row['standort_id'] . "\">" .  $row['bezeichnung'] . "</td></tr>";
 		}
 		$i++;
 	}
@@ -40,17 +44,21 @@
 	<tr>
 <?php
 	// Umschreiben auf SELECT mit $result
-	$con = mysql_connect($host, $benutzer, $passwort);
-	mysql_select_db($dbname);
-	$result = mysql_query('SELECT * from sensorendaten');
-	$num=mysql_numrows($result);
+    // DB-Connection
+    try {
+        $con = new PDO('mysql:host=' . $host . ';dbname=' . $dbname . ';charset=utf8', $benutzer, $passwort);
+    
+    } catch (PDOException $ex) {
+        die('Die Datenbank ist momentan nicht erreichbar!');
+    }
+	$result = $con->query('SELECT * from sensorendaten');
 	$i = 0;
-	while ( $i < $num )
+	while ( $row = $result->fetch() )
 	{
 		if ($i == 0) {
-			echo "<td><input type=\"radio\" name=\"datenart\" value=\"" .  mysql_result($result,$i,"sensorendaten_id") . "\" checked>" .  mysql_result($result,$i,"tabelle") . "</td>";
+			echo "<td><input type=\"radio\" name=\"datenart\" value=\"" .  $row['sensorendaten_id'] . "\" checked>" .  $row['tabelle'] . "</td>";
 		} else {
-			echo "<td><input type=\"radio\" name=\"datenart\" value=\"" .  mysql_result($result,$i,"sensorendaten_id") . "\">" .  mysql_result($result,$i,"tabelle") . "</td>";
+			echo "<td><input type=\"radio\" name=\"datenart\" value=\"" .  $row['sensorendaten_id'] . "\">" .  $row['tabelle'] . "</td>";
 		}
 		$i++;
 	}

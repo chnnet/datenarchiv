@@ -14,8 +14,12 @@
 <?php
 
 	// ***** Parameter infos auslesen *****
-	$serien_id = $_GET['serien_id'];
-	$serienname = $_GET['name']; 
+	if (isset($_GET['serien_id'])) {
+
+		$serien_id = $_GET['serien_id'];
+		$serienname = $_GET['name']; 
+	
+	}
 
 	// ***** Session infos auslesen *****
 
@@ -24,59 +28,51 @@
         $passwort = $_SESSION['passwort'];
         $dbname = $_SESSION['dbname'];
         
-	// ***** Verbindugsaufbau zu MySQL *****
+    // DB-Connection
+    try {
+        $con = new PDO('mysql:host=' . $host . ';dbname=' . $dbname . ';charset=utf8', $benutzer, $passwort);
+    
+    } catch (PDOException $ex) {
+        die('Die Datenbank ist momentan nicht erreichbar!');
+    }
+    
+	if (isset($_GET['serien_id'])) {
 
-		$con = mysql_connect($host, $benutzer, $passwort);
-		if (!$con) {
-			exit('Connect Error (' . mysql_connect_errno() . ') ' . mysql_connect_error());
-		}
+			$result = $con->prepare('SELECT * from serien_folgen where serie_id = \'' . $serien_id . '\'');
+			$result->execute(array($serien_id))
+				or die('Fehler in der Abfrage. ' . htmlspecialchars($result->errorinfo()[2]));
 
-		mysql_select_db($dbname);
-		if ($serien_id)
-		{
-			$result = mysql_query('SELECT * from serien_folgen where serie_id = \'' . $serien_id . '\'');
-		} else {
-			$result = mysql_query('SELECT * from serien');
-		}
-		
-		if (!$result) {
-			exit('Query Fehler (' . mysql_connect_errno() . ') ' . mysql_connect_error());
-		} else
-        {
-            if ($serien_id)
-            {
-	            echo "<h3>" . $serienname . "</h3>";
-	            echo "<a href=\"serien.php?serien_id=\"> Serien&uuml;bersicht</a><br>";
-            	$num=mysql_numrows($result);
-            	echo "<table border=\"1\"><tr><th>Folge</th><th>Titel</th><th>Premiere DE</th><th>Originaltitel</th><th>Premiere</th></tr>";
+	    echo "<h3>" . $serienname . "</h3>";
+        echo "<a href=\"serien.php\"> Serien&uuml;bersicht</a><br>";
+    	echo "<table border=\"1\"><tr><th>Folge</th><th>Titel</th><th>Premiere DE</th><th>Originaltitel</th><th>Premiere</th></tr>";
 
-                $i=0;
-                while ($i < $num) {
-						
-                        // Suchergebnis in Liste anzeigen
-                        echo "<tr><td>" . mysql_result($result,$i,"folge_id") . "</td><td>" . mysql_result($result,$i,"titel_de") . "</td><td>" . mysql_result($result,$i,"premiere_de") . "</td><td>" . mysql_result($result,$i,"titel_en") . "</td><td>" . mysql_result($result,$i,"premiere_en") . "</td></tr>";
-                        $i++;
-                }
-				echo "</table>";
-	            echo "<br><a href=\"serien.php?serien_id=\"> Serien&uuml;bersicht</a>";
-
-            } else
-            {
-	            echo "<h3>Serien&uumlbersicht</h3>";
-            	$num=mysql_numrows($result);
-            	echo "<table border=\"0\">";
-
-                $i=0;
-                while ($i < $num) {
-						
-                        // Suchergebnis in Liste anzeigen
-                            echo "<tr><td> <a href=\"serien.php?serien_id=" . mysql_result($result,$i,"serien_id") . "&name=" . mysql_result($result,$i,"name") . "\">" . mysql_result($result,$i,"name") . "</a></td></tr>";
-                        $i++;
-                }
-				echo "</table>";
-            }
-            echo "<br>";
+        while ($row = $result->fetch()) {
+				
+            // Suchergebnis in Liste anzeigen
+            echo "<tr><td>" . $row['folge_id'] . "</td><td>" . $row['titel_de'] . "</td><td>" . $row['premiere_de'] . "</td><td>" . $row['titel_en'] . "</td><td>" . $row['premiere_en'] . "</td></tr>";
         }
+		echo "</table>";
+	    echo "<br><a href=\"serien.php\"> Serien&uuml;bersicht</a>";
+	}    else {
+			
+		$result = $con->query('SELECT * from serien')
+			or die('Fehler in der Abfrage. ' . htmlspecialchars($result->errorinfo()[2]));
+
+	    echo "<h3>Serien&uumlbersicht</h3>";
+        echo "<table border=\"0\">";
+
+        while ($row = $result->fetch()) {
+						
+                // Suchergebnis in Liste anzeigen
+                echo "<tr><td> <a href=\"serien.php?serien_id=" . $row['serien_id'] . "&name=" . $row['name'] . "\">" . $row['name'] . "</a></td></tr>";
+        }
+		echo "</table>";
+    }
+
+
+    echo "<br>";
+        
+
 // else Form, Klammern rausgenommen und else auskommentiert
 ?>
 

@@ -38,29 +38,27 @@
 	$passwort = "testchn";
 	$dbname = "datenarchiv";
 */
-	$con = mysql_connect($host, $benutzer, $passwort);
-	if (!$con) {
-		exit('Connect Error (' . mysql_errno() . ') ' . mysql_error());
-	}
-
-	mysql_select_db($dbname);
+    // DB-Connection
+    try {
+        $con = new PDO('mysql:host=' . $host . ';dbname=' . $dbname . ';charset=utf8', $benutzer, $passwort);
+    
+    } catch (PDOException $ex) {
+        die('Die Datenbank ist momentan nicht erreichbar!');
+    }
 	$akt_monat = date("Y-m-01");
-	$result = mysql_query("SELECT kreditkarte_id, datum, betrag, text, status from kreditkarte where datum >= '" . $akt_monat . "' and betrag < 0 and status ='I'");
+	$result = $con->query("SELECT kreditkarte_id, datum, betrag, text, status from kreditkarte where datum >= '" . $akt_monat . "' and betrag < 0 and status ='I'");
 
 	if ($result)
 	{
-		$num=mysql_numrows($result);
-		if ($num > 0)
+		if ($result->rowCount() > 0)
 		{
-			$i=0;
 			echo "<table border=1>";
 			echo "<tr><th></th><th>Datum</th><th>Betrag</th><th>Text</th></tr>";
-			while ($i < $num)
+			while ($row = $result->fetch())
 			{
 				// status berücksichtigen
-				$id = mysql_result($result,$i,"kreditkarte_id");
-				echo "<tr><td><a href=\"insertkk.php?kreditkarte_id=" . $id . "&datum=" . mysql_result($result,$i,"datum") . "&betrag=" . mysql_result($result,$i,"betrag") . "&text=" . mysql_result($result,$i,"text") . "\" target=\"_blank\">" . $id . "</a></td><td>" . mysql_result($result,$i,"datum") . "</td><td align=right>" . mysql_result($result,$i,"betrag") . "</td><td>" . mysql_result($result,$i,"text") . "</td></tr>";
-				$i++;
+				$id = $row['kreditkarte_id'];
+				echo "<tr><td><a href=\"insertkk.php?kreditkarte_id=" . $id . "&datum=" . $row['datum'] . "&betrag=" . $row['betrag'] . "&text=" . $row['text'] . "\" target=\"_blank\">" . $id . "</a></td><td>" . $row['datum'] . "</td><td align=right>" . $row['betrag'] . "</td><td>" . $row['text'] . "</td></tr>";
 			}
 			echo "<table border=1>";
 		}
