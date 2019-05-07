@@ -7,30 +7,32 @@ $app_benutzer = $_POST['loginname'];
 $app_passwort = $_POST['password'];
 $host = $_POST['host'];
 $dbname = $_POST['dbname'];
+// an Hosting anpassen
 $benutzer = "";
 $passwort = "";
 
-$con = mysqli_connect($host, $benutzer, $passwort);
-if (!$con) {
-var_dump($_POST);
-exit('Connect Error (' . mysqli_connect_errno() . ') '
-. mysqli_connect_error());
+// DB-Connection
+try {
+	$con = new PDO('mysql:host=' . $host . ';dbname=' . $dbname . ';charset=utf8', $benutzer, $passwort);
+
+} catch (PDOException $ex) {
+	die('Die Datenbank ist momentan nicht erreichbar!');
 }
-//set the default client character set
-mysqli_set_charset($con, 'utf-8');
-mysqli_select_db($con, $dbname);
+
+
 // Anpassung an Hosting
-$ben_menu = mysqli_query($con, "SELECT keynr,password,berechtigungsgruppe FROM benutzer WHERE login='" . $app_benutzer . "'");
-if (mysqli_num_rows($ben_menu) < 1) {
+$ben_menu = $con->prepare("SELECT keynr,password,berechtigungsgruppe FROM benutzer WHERE login='" . $app_benutzer . "'");
+$ben_menu->execute(array($app_benutzer))
+	or die('Fehler bei Abfrage Benutzer');
+if ($ben_menu->rowCount() < 1) {
 exit("Benutzer " . $_POST["loginname"] . " nicht gefunden.");
-}
-else {
+} else {
     // Passwort prüfen
-    $row = mysqli_fetch_row($ben_menu);
+    $row = $ben_menu->fetch();
     // var_dump($row);
     $chkpwd = $row[1];
     $keynr = $row[0];
-    mysqli_free_result($ben_menu);
+    $ben_menu->closeCursor(); // check
     // Anpassung an Hosting
     if ($app_passwort == $chkpwd) {
         
