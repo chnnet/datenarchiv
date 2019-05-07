@@ -43,7 +43,7 @@
 		if ($filmID)
 		{
 			$result = $con->prepare('SELECT * from spielfilme s, std_klassifizierung k where s.genre=k.klass_id and s.spielfilme_id = ' . $filmID);
-			$result->execute(array($filmID))
+			$result->execute(array($filmID));
 		}
 		
 		if (!$result) {

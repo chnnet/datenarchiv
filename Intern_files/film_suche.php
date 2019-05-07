@@ -20,11 +20,8 @@
 	$titel = $_POST['titel'];
 	//$klass_id = $_POST['klass_id'];
 	$schlagw = $_POST['beschreibung'];
-	if (isset($_POST['originalversion'])) {     
-		$original = 1;
-		} else {
-		$original = 0; 
-	} 
+	$original = $_POST['originalversion'];
+
 	// ***** Session infos auslesen *****
 
         $host = $_SESSION['host'];
@@ -55,7 +52,7 @@
 						break;
 					case 2:
 						$maxID = $con->query('SELECT max(spielfilme_id) from spielfilme');
-						$top100 = $result->fetchColumn();
+						$top100 = $maxID->fetchColumn();
 						$top100 = $top100 - 100;
 						$result = $con->query('SELECT s.spielfilme_id, s.titel, k.bezeichnung, s.jahr, s.originalversion from spielfilme s, std_klassifizierung k where s.klass_id=k.klass_id and s.spielfilme_id > ' . $top100 . ' order by s.spielfilme_id desc');
 						break;
@@ -69,7 +66,7 @@
 			
 			// Ausgabe
 			if (!$result) {
-				exit('Query Fehler (' . mysql_connect_errno() . ') ' . mysql_connect_error());
+				exit('Fehler in der Abfrage. ' . htmlspecialchars($result->errorinfo()[2]));
 			} else
 	                {
 	                    echo "<table border=\"1\"><tr><th>Details</th><th>Ursprung</th><th>Titel</th><th>Jahr</th><th>OV</th></tr>";

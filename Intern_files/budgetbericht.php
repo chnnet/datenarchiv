@@ -128,14 +128,14 @@ if ($monat > 12)
 	if ($res_saldo)
 	{
 		$row = $res_saldo->fetch();
-		$bargeld = $row['$saldo_bargeld'];
-		$bank = $row['$saldo_bank'];
-		$kreditkarte = $row['$saldo_kreditkarte'];
-		$anita_verr = $row['$saldo_verrAnita'];
+		$bargeld = $row['saldo_bargeld'];
+		$bank = $row['saldo_bank'];
+		$kreditkarte = $row['saldo_kreditkarte'];
+		$anita_verr = $row['saldo_verrAnita'];
 	}
 	else
 	{
-		echo "MySQL Error (" . mysql_errno() . ") :" . mysql_error();
+		echo 'Fehler in der Abfrage. ' . htmlspecialchars($result->errorinfo()[2]);
 		$bargeld = 0;
 		$bank = 0;
 		$kreditkarte = 0;
@@ -252,7 +252,7 @@ if ($monat > 12)
 					}
 				}
 				// KK berücksichtigen, verr_Anita
-				if ($i=1 ) $saldo = $saldo + $kreditkarte + $anita_verr;
+				if ($i==1 ) $saldo = $saldo + $kreditkarte + $anita_verr;
 				$monatssaldo[$monat] = $saldo;
 				// nächstes Monat setzen
 				$monat = $monat + 1;
@@ -260,6 +260,7 @@ if ($monat > 12)
 				{
 					$monat = (($akt_jahr + 1) * 100) + (($monat % 100) - 12);
 				}
+				$i++;
 			}
 			echo "</tr><tr><td></td>";
 			// Anfangssaldo
@@ -273,6 +274,7 @@ if ($monat > 12)
 			echo "</tr>";
 			reset($budgetmatrix);
 
+			$i=0;
 			while ( $i <= $arr_len )
 			{
 				echo "<tr>";
