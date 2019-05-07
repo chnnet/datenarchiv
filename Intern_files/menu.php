@@ -66,18 +66,18 @@ while ($row = $result->fetch()) {
 		if ( $icon == "" )
 		{
 		
-					echo "<td><a href=\"http://192.168.64.2/datenarchiv/" . $pfadf . "\" target=\"" . $target . "\">" . $name . "</a></td>";
-//					echo "<td><a href=\"http://www.chnnet.at/chnnet.at//Intern_files/" . $pfadf . "\" target=\"" . $target . "\">" . $name . "</a></td>";
+//					echo "<td><a href=\"http://192.168.64.2/datenarchiv/" . $pfadf . "\" target=\"" . $target . "\">" . $name . "</a></td>";
+					echo "<td><a href=\"http://www.chnnet.at/chnnet.at//Intern_files/" . $pfadf . "\" target=\"" . $target . "\">" . $name . "</a></td>";
 		}
 		else
 		{
-					echo "<td><a href=\"http://192.168.64.2/datenarchiv/" . $pfadf . "\" target=\"" . $target . "\"> <img src=\"" . $icon . "\" border=\"0\" alt=\"" . $name . "\"></a></td>";
-//					echo "<td><a href=\"http://www.chnnet.at/chnnet.at//Intern_files/" . $pfadf . "\" target=\"" . $target . "\"> <img src=\"http://www.chnnet.at/chnnet.at//Intern_files" . $icon . "\" border=\"0\" alt=\"" . $name . "\"></a></td>";
+//					echo "<td><a href=\"http://192.168.64.2/datenarchiv/" . $pfadf . "\" target=\"" . $target . "\"> <img src=\"" . $icon . "\" border=\"0\" alt=\"" . $name . "\"></a></td>";
+					echo "<td><a href=\"http://www.chnnet.at/chnnet.at//Intern_files/" . $pfadf . "\" target=\"" . $target . "\"> <img src=\"http://www.chnnet.at/chnnet.at//Intern_files" . $icon . "\" border=\"0\" alt=\"" . $name . "\"></a></td>";
 		}
 }
 
-//echo "<td><a href=\"http://www.chnnet.at/chnnet.at//Intern_files/logout.php\" target=\"_parent\"><img src=\"/chnnet.at//Intern_files/icons/logout.jpg\" border=\"0\" alt=\"Logout\"></a></td>";
-echo "<td><a href=\"http://192.168.64.2/datenarchiv/logout.php\" target=\"_parent\"><img src=\"/chnnet.at//Intern_files/icons/logout.jpg\" border=\"0\" alt=\"Logout\"></a></td>";
+echo "<td><a href=\"http://www.chnnet.at/chnnet.at//Intern_files/logout.php\" target=\"_parent\"><img src=\"/chnnet.at//Intern_files/icons/logout.jpg\" border=\"0\" alt=\"Logout\"></a></td>";
+//echo "<td><a href=\"http://192.168.64.2/datenarchiv/logout.php\" target=\"_parent\"><img src=\"/chnnet.at//Intern_files/icons/logout.jpg\" border=\"0\" alt=\"Logout\"></a></td>";
 echo "</tr>";
 echo "</table>";
 echo "</body></html>";
