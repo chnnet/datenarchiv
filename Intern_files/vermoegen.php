@@ -25,21 +25,6 @@
         if (isset($_POST['jahrmonat'])) // speichern
         {
 
-			function erzeugeDezimal(einer, dezimal) {
-			
-					if (einer < 0) {
-
-						$betrag = ($dezimal / 100) * (-1) + $einer;
-					
-					} else {
-					
-						$betrag = ($dezimal / 100) + $einer;
-					
-					}
-				$betrag = number_format ($betrag, 2, '.', '');	
-				return $betrag;
-			}
-
             // ***** Parameter auslesen - Seite *****
 
             $jahrmonat = $_POST['jahrmonat'];
@@ -55,21 +40,12 @@
             $wp_betrag_int = $_POST['wp_betrag_int'];
             $av_betrag_dec = $_POST['av_betrag_dec'];
             $av_betrag_int = $_POST['av_betrag_int'];
-<<<<<<< HEAD
-            $bar_betrag = erzeugeDezimal($bar_betrag_dec, $bar_betrag_int);
-            $bank_betrag = erzeugeDezimal($bank_betrag_dec, $bank_betrag_int);
-            $kk_betrag = erzeugeDezimal($kk_betrag_dec, $kk_betrag_int);
-            $spar_betrag = erzeugeDezimal($spar_betrag_dec, $spar_betrag_int);
-			$wp_betrag = erzeugeDezimal($wp_betrag_dec, $wp_betrag_int);
-			$av_betrag = erzeugeDezimal($av_betrag_dec, $av_betrag_int);
-=======
             $bar_betrag = ($bar_betrag_dec / 100 ) + $bar_betrag_int;
             $bank_betrag = setAmount($bank_betrag_int, $bank_betrag_dec);
             $kk_betrag = setAmount($kk_betrag_int, $kk_betrag_dec);
             $spar_betrag = setAmount($spar_betrag_int, $spar_betrag_dec);
 			$wp_betrag = setAmount($wp_betrag_int, $wp_betrag_dec);
 			$av_betrag = setAmount($av_betrag_int, $av_betrag_dec);
->>>>>>> 5f3aafe7067c51e3043e52512865ddb6b378a64c
 
             // ***** Parameter auslesen session *****
             $host = $_SESSION['host'];
@@ -79,47 +55,49 @@
             $benutzer_id = $_SESSION['keynr'];
 
 
-            $con = mysql_connect($host, $benutzer, $passwort);
-            mysql_select_db($dbname);
+			// DB-Connection
+			try {
+				$con = new PDO('mysql:host=' . $host . ';dbname=' . $dbname . ';charset=utf8', $benutzer, $passwort);
+
+			} catch (PDOException $ex) {
+				die('Die Datenbank ist momentan nicht erreichbar!');
+			}
             
             // Datenbank
             if ($jahrmonat != null)
             {
 					// prüfen ob für Jahrmonat schon Wert eingetragen
-                    $result = mysql_query("select max(jahrmonat) from vermoegen");
-                    $row = mysql_fetch_row($result);
+                    $row = $con->query("select max(jahrmonat) from vermoegen")->fetch();
                     $max_jahrmonat = $row[0];
-                    mysql_free_result($result);
+
 
 					if ($max_jahrmonat < $jahrmonat)
 					{
-						$result = mysql_query("INSERT INTO vermoegen VALUES (" . $jahrmonat . ",'" . $bar_betrag . "','" . $bank_betrag . "','" . $kk_betrag . "','" . $wp_betrag . "','" . $spar_betrag . "','" . $av_betrag ."')");
-						if (!$result) {
-							exit('MySQL Fehler: (' . mysql_errno() . ') ' . mysql_error());
-						}
+                    	$result = $con->prepare("INSERT INTO vermoegen (jahrmonat,saldo_bargeld,saldo_bank,saldo_kreditkarte,saldo_wertpapiere,saldo_sparbuch,saldo_verrAnita) VALUES (?,?,?,?,?,?,?)");
+                    	$result->execute(array($jahrmonat,$bar_betrag,$bank_betrag,$kk_betrag,$wp_betrag,$spar_betrag, $av_betrag ))
+        				or die ('Fehler beim INSERT: ' . htmlspecialchars($result->errorinfo()[2]));
+
 					}
 					else
 					{
 						echo "Salden für " . $jahrmonat . " bereits eingetragen!!!";
 					}
+	            // Werte des aktuellen Jahres werden ausgeben
+			    $jahr = date("Y", time());
+				$result = $con->prepare("SELECT * FROM vermoegen WHERE jahrmonat > " . $jahr . "00");
+				$result->execute([$jahr]); 
+            
+				echo "<table border=\"1\"><tr><th>Jahr/Monat</th><th>Bar</th><th>Bank</th><th>Kreditkarte</th><th>Wertpapiere</th><th>Sparbuch</th><th>Anita Verr</th></tr>";
+	
+				while ($row = $result->fetch()) {
+								
+	 				// Suchergebnis in Liste anzeigen
+	    			echo "<tr><td>" . $row[0] . "</td><td>" . $row[1] . "</td><td>" . $row[2] . "</td><td>" . $row[3] . "</td><td>" . $row[4] . "</td><td>" . $row[5] . "</td><td>" . $row[6] . "</td></tr>";	    	
+	    		}
+		    	echo "</tr>";
+    	        echo "</table>";
             }
-            // Werte des aktuellen Jahres werden ausgeben
-		    $jahr = date("Y", $timestamp);
-echo "jahr: " . $jahr;
-            $result = mysql_query("SELECT * FROM vermoegen WHERE jahrmonat > " . $jahr . "00");
-            $num=mysql_num_rows($result);
-            $i=0;
-            $rownum=0;
-            echo "<table border=\"1\">";
-            while ($i < $num) {
 
-                    $rownum++;
-                    echo "<tr>";
-                    echo "<td>" . mysql_result($result,$i,0) . "</td><td>" . mysql_result($result,$i,1) . "</td><td>" . mysql_result($result,$i,2) . "</td><td>" . mysql_result($result,$i,3) . "</td><td>" . mysql_result($result,$i,4) . "</td><td>" . mysql_result($result,$i,5) . "</td>";
-                    echo "</tr>";
-                    $i++;
-            }
-            echo "</table>";
         }
 		else
 		{

@@ -1,6 +1,6 @@
  <?php
  
-	function jsklassids ($tabelle, $id, $bezeichnung, $bedingung)
+	function distinctSelect ($tabelle, $feld)
 	{
 
 
@@ -20,13 +20,8 @@
 			die('Die Datenbank ist momentan nicht erreichbar!');
 		}
 		
-		if ($bedingung == true)
-		{
-			 $jsstring = "<option></option>";
-		}
-
-		$result = $con->prepare("select " . $id . "," . $bezeichnung . " from " . $tabelle . " order by " . $id);
-		$result->execute(array($id, $bezeichnung, $tabelle))
+		$result = $con->prepare("select distinct " . $feld . " from " . $tabelle . " order by " . $feld);
+		$result->execute(array($feld, $tabelle))
 		    or die ('Fehler in der Abfrage. ' . htmlspecialchars($result->errorinfo()));
 
             $rownum=0;
@@ -34,7 +29,7 @@
 
                     $rownum++;
                     // check Syntax 0,1 bei fetch falls notwendig
-                    $jsstring .= "<option value=\"" . $row[0] . "\">" . $row[1] . "</option>";
+                    $jsstring .= "<option value=\"" . $row[0] . "\">" . $row[0] . "</option>";
 
             }
             
