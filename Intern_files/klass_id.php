@@ -10,6 +10,10 @@ and open the template in the editor.
     <head>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
         <title>Klassifizierung anlegen</title>
+<?php
+
+
+?>
     </head>
     <body>
         <h1>Klassifizierung anlegen</h1>
@@ -37,8 +41,9 @@ and open the template in the editor.
     }
      $datum = date("yyyy-mm-dd", $timestamp);
 
-		$result = $con->execute('INSERT INTO std_klassifizierung values (' . $klass_id . ',' . $bezeichnung . ',' . $datum . ',' . $datum . ')')
-        or die ('Fehler in der Abfrage. ' . htmlspecialchars($result->errorinfo()[2]))
+		$result = $con->prepare('INSERT INTO std_klassifizierung values (?,?,?,?)');
+        $result->execute(array($klass_id, $bezeichnung, $datum, $datum ))
+        or die ('Fehler in der Abfrage. ' . htmlspecialchars($result->errorinfo()[2]));
 
 	} else // Form
         {
@@ -56,7 +61,7 @@ and open the template in the editor.
                 echo "Datum: " . $datum;
                 if (!$klass_id)
                 {
-                    $result = $con->execute("select max(klass_id) from std_klassifizierung");
+                    $result = $con->query("select max(klass_id) from std_klassifizierung");
                     $klass_id = $result->fetchColumn();
                     $klass_id++;
 
@@ -66,7 +71,7 @@ and open the template in the editor.
                 }
 ?>
            <form name="Klassifizierungen" action="klass_id.php" method="post">
-            <table><tr><td>Zuordnung</td><td>
+            <table><tr><td>Struktur</td><td>
       <?php
             // Hierarchie aus DB lesen
 		    try {
@@ -87,25 +92,39 @@ and open the template in the editor.
             }
       ?>
                     </td>
+                    <tr>
+                    	<td>Parent</td>
+                    <td>
+			<select name="klass_parent">
+            </select>
+                    </td>
+
+                    </tr>
+                    <tr>
+                    	<td>Klassifizierung</td>
+                    <td>
+			<select name="klass_id">
+            </select>
+                    </td>
+               </tr>
             <tr>
                     <td>klass_id</td>
                     <td>
                     <input type=text name="klass_id" size="10" maxlength="10" value="<?php echo $klass_id ?>" readonly/>
                     </td>
-            </tr>
+                    <td>
+            <input type=submit value="Speichern"/>    </td>             </tr>
             <tr>
                     <td>Bezeichnung</td>
                     <td>
-                    <input type=text name="bezeichnung" size="10" maxlength="10"/>
+                    <input type=text name="bezeichnung" size="30" maxlength="30"/>
                     </td>
             </tr>
             </table>
 
             <input type=hidden name="blgform" value="1"/>
-            <input type=submit value="Speichern"/>
+            <input type=submit value="Zuordnen"/>
             </form>
- <?php
-        }
-?>
+
     </body>
 </html>
